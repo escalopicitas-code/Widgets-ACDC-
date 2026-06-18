@@ -14,16 +14,7 @@
     var style = document.createElement('style');
     style.id = CSS_ID;
     style.textContent = `
-
-      /* ─────────────────────────────────────────────────
-         Descrição do produto — mesmo vocabulário visual
-         do restante: linhas de 1px, sem radius, sem
-         sombras. Tipografia leve e espaçada.
-      ───────────────────────────────────────────────── */
-
-      [data-store*="product-description"] > h6 {
-        display: none !important;
-      }
+      [data-store*="product-description"] > h6 { display: none !important; }
 
       .acdc-product-description {
         width: 100%;
@@ -33,17 +24,12 @@
         line-height: 1.6;
       }
 
-      /* seções separadas por linha fina */
       .acdc-section {
         padding: 20px 0;
         border-top: 1px solid #ebebeb;
       }
-      .acdc-section:first-child {
-        border-top: 0;
-        padding-top: 0;
-      }
+      .acdc-section:first-child { border-top: 0; padding-top: 0; }
 
-      /* título de cada seção — leve, espaçado */
       .acdc-section h3 {
         margin: 0 0 16px;
         font-size: 10px;
@@ -53,7 +39,6 @@
         color: #aaaaaa;
       }
 
-      /* linhas de detalhes — sem dashed, só 1px solid sutil */
       .acdc-row {
         display: flex;
         flex-wrap: wrap;
@@ -62,10 +47,7 @@
         padding: 8px 0;
         border-bottom: 1px solid #f2f2f2;
       }
-      .acdc-row:last-child {
-        border-bottom: 0;
-        padding-bottom: 0;
-      }
+      .acdc-row:last-child { border-bottom: 0; padding-bottom: 0; }
 
       .acdc-label {
         font-size: 10px;
@@ -85,7 +67,7 @@
         word-break: break-word;
       }
 
-      /* dimensões — grid limpo, sem radius, sem sombra */
+      /* grade de dimensões: gap de 1px via background no grid-wrapper */
       .acdc-dimensions {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -105,13 +87,8 @@
         transform: translateY(8px);
         transition: opacity .4s ease, transform .4s ease;
       }
-      .acdc-dimension.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      .acdc-dimension:hover {
-        background: #fafafa;
-      }
+      .acdc-dimension.visible { opacity: 1; transform: translateY(0); }
+      .acdc-dimension:hover   { background: #fafafa; }
 
       .acdc-dimension-label {
         font-size: 9.5px;
@@ -130,7 +107,6 @@
         line-height: 1.2;
       }
 
-      /* notas / observações — só texto, separado por linha */
       .acdc-notes {
         margin-top: 20px;
         padding-top: 16px;
@@ -145,11 +121,8 @@
         color: #888888;
         line-height: 1.6;
       }
-      .acdc-notes p:last-child {
-        margin-bottom: 0;
-      }
+      .acdc-notes p:last-child { margin-bottom: 0; }
 
-      /* imagens dentro da descrição */
       .acdc-product-description img {
         max-width: 100%;
         height: auto;
@@ -159,9 +132,7 @@
         border-radius: 0;
       }
 
-      @media (max-width: 900px) {
-        .acdc-dimensions { grid-template-columns: repeat(2, 1fr); }
-      }
+      @media (max-width: 900px) { .acdc-dimensions { grid-template-columns: repeat(2, 1fr); } }
       @media (max-width: 480px) {
         .acdc-dimensions { grid-template-columns: 1fr; }
         .acdc-row        { flex-direction: column; gap: 2px; }
@@ -176,11 +147,8 @@
 
   function escapeHtml(str) {
     return String(str)
-      .replace(/&/g,  '&amp;')
-      .replace(/</g,  '&lt;')
-      .replace(/>/g,  '&gt;')
-      .replace(/"/g,  '&quot;')
-      .replace(/'/g,  '&#39;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function addDefaultUnit(label, value) {
@@ -198,6 +166,43 @@
     return result;
   }
 
+  /* ─────────────────────────────────────────────────────────────
+     normalizeRaw
+     Pré-processa o texto bruto inserindo quebras de linha nos
+     lugares onde múltiplos pares label:valor estão concatenados
+     na mesma linha — padrão comum em descrições da Nuvemshop.
+
+     Exemplo: "Profundidade: 62 cm Cor: Bege Obs: Consulte-nos"
+     vira:   "Profundidade: 62 cm\nCor: Bege\nObs: Consulte-nos"
+  ───────────────────────────────────────────────────────────── */
+  function normalizeRaw(raw) {
+    return raw
+      // 1. "Obs: / Observação: / Nota:" inline → nova linha
+      .replace(/\s+(obs(?:erva[çc][ãa]o)?\s*:|nota\s*:)/gi, '\n$1')
+
+      // 2. Após valor com unidade de medida (62 cm, 40 mm, 1.5 kg...),
+      //    quando o próximo token parece um label (palavra maiúscula + ":"),
+      //    insere quebra de linha antes do label.
+      //    Ex: "62 cm Cor:"  →  "62 cm\nCor:"
+      .replace(
+        /(\d+(?:[,\.]\d+)?\s*(?:cm|mm|m\b|kg|g|l)\b)\s+(?=[A-ZÁÉÍÓÚÀÃÕÇ][\w\s]{0,30}:)/gi,
+        '$1\n'
+      )
+
+      // 3. Após número puro (sem unidade) seguido de label aparente
+      //    mas NÃO quando o número faz parte de uma palavra como "D-28"
+      //    Ex: "Altura: 80 Cor:"  →  "Altura: 80\nCor:"
+      .replace(
+        /((?:^|[^a-zA-ZÀ-ö\-])(\d+(?:[,\.]\d+)?))\s+(?=[A-ZÁÉÍÓÚÀÃÕÇ][^:\n\d]{1,25}:)/gm,
+        '$1\n'
+      )
+
+      // 4. Após fim de frase (ponto/!/?), se o que vem a seguir
+      //    parece ser um novo label.
+      //    Ex: "...epóxi. Medidas: Altura: 80"  →  "...epóxi.\nMedidas: Altura: 80"
+      .replace(/([.!?])\s+(?=[A-ZÁÉÍÓÚÀÃÕÇ][\w\s]{0,25}:)/g, '$1\n');
+  }
+
   /* ── DOM ── */
   function findContainer() {
     return document.querySelector('[data-store*="product-description"] .user-content') ||
@@ -210,7 +215,7 @@
     });
   }
 
-  /* ── parser ── */
+  /* ── parser principal ── */
   function buildDescription(container) {
     if (container.dataset[READY_KEY] === 'true') return false;
 
@@ -219,9 +224,11 @@
 
     container.dataset[READY_KEY] = 'true';
 
-    // esconde o h6 anterior se existir
     var prev = container.previousElementSibling;
     if (prev && prev.tagName.toLowerCase() === 'h6') prev.style.display = 'none';
+
+    // normaliza antes de splittar em linhas
+    raw = normalizeRaw(raw);
 
     var lines = raw
       .replace(/\r/g, '\n')
@@ -243,7 +250,7 @@
     var observations = [];
 
     lines.forEach(function (line) {
-      // remove prefixo "Medidas:" solto
+      // remove prefixo "Medidas:" solto (ex: "Medidas: Altura: 80" → "Altura: 80")
       line = line.replace(/^medidas?\s*(?:unit[aá]rias?)?\s*[:–-]*/i, '').trim();
       if (!line) return;
 
@@ -260,10 +267,11 @@
 
       var label = sanitize(pairM[1]);
       var value = sanitize(pairM[2]);
+
       var isDim = /altura|largura|profundidade|comprimento|assento|di[aâ]metro|espessura|peso|tamanho/i.test(label);
 
       if (isDim) dimensions.push({ label: label, value: addDefaultUnit(label, value) });
-      else        details.push({ label: label, value: value });
+      else       details.push({ label: label, value: value });
     });
 
     var dims = dedup(dimensions,   function (d) { return d.label + '||' + d.value; });
@@ -313,25 +321,22 @@
   var observer   = null;
   var retryTimer = null;
   var attempts   = 0;
-  var MAX_ATTEMPTS = 12; // ~24s de tentativas no total
+  var MAX_ATTEMPTS = 12;
 
   function tryBuild() {
     if (built) return;
     var container = findContainer();
     if (container && buildDescription(container)) {
       built = true;
-      if (observer)   { observer.disconnect(); observer   = null; }
+      if (observer)   { observer.disconnect();    observer   = null; }
       if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
     }
   }
 
   function scheduleRetries() {
-    // tentativas imediatas
     [300, 800, 1800].forEach(function (ms) {
       setTimeout(function () { if (!built) tryBuild(); }, ms);
     });
-
-    // depois tenta a cada 2s, mas para após MAX_ATTEMPTS
     (function tick() {
       if (built || attempts >= MAX_ATTEMPTS) return;
       attempts++;
