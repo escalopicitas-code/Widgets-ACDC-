@@ -111,4 +111,205 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="6" rx="2"></rect><path d="M9 10v4a3 3 0 0 0 3 3h0"></path><rect x="11" y="17" width="5" height="4" rx="1"></rect></svg>
           </span>
           <div>
-            <h2 id="wpc-modal-title">Calculadora de Rolos</h
+            <h2 id="wpc-modal-title">Calculadora de Rolos</h2>
+            <p>Veja em segundos quantos rolos você precisa</p>
+          </div>
+        </div>
+        <div class="wpc-row">
+          <div class="wpc-field">
+            <label for="wpc-cov">m² por rolo</label>
+            <div class="wpc-stepper">
+              <button type="button" id="wpc-cov-minus" aria-label="Diminuir">−</button>
+              <input id="wpc-cov" type="number" inputmode="decimal" step="0.1" min="0.1" value="5.3">
+              <button type="button" id="wpc-cov-plus" aria-label="Aumentar">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="wpc-row" style="margin-bottom:6px">
+          <div class="wpc-field">
+            <label>Tipo de estampa</label>
+            <div class="wpc-segment" role="radiogroup" aria-label="Tipo de estampa">
+              <input class="wpc-seg-1" type="radio" name="wpc-margin" id="wpc-m1" value="0.05">
+              <label for="wpc-m1">Liso</label>
+              <input class="wpc-seg-2" type="radio" name="wpc-margin" id="wpc-m2" value="0.10" checked>
+              <label for="wpc-m2">Médio</label>
+              <input class="wpc-seg-3" type="radio" name="wpc-margin" id="wpc-m3" value="0.15">
+              <label for="wpc-m3">Grande</label>
+              <div class="wpc-segment-highlight"></div>
+            </div>
+          </div>
+        </div>
+        <p class="wpc-hint">*O m² por rolo e o tamanho da estampa estão na descrição do produto.</p>
+        <div class="wpc-row">
+          <div class="wpc-field">
+            <label for="wpc-w">Largura</label>
+            <div class="wpc-unit-wrap"><input id="wpc-w" type="number" inputmode="decimal" min="0" step="0.01" placeholder="3,50"><span class="wpc-unit-suffix">m</span></div>
+          </div>
+          <div class="wpc-field">
+            <label for="wpc-h">Altura</label>
+            <div class="wpc-unit-wrap"><input id="wpc-h" type="number" inputmode="decimal" min="0" step="0.01" placeholder="2,70"><span class="wpc-unit-suffix">m</span></div>
+          </div>
+        </div>
+        <div class="wpc-result" id="wpc-result" aria-live="polite">
+          <div class="wpc-result-inner">
+            <div class="wpc-stats">
+              <div>
+                <p class="wpc-stat-label">Área total</p>
+                <p class="wpc-area-val"><span id="wpc-area">0</span> m²</p>
+              </div>
+              <div class="wpc-rolls-block">
+                <p class="wpc-stat-label">Você precisa de</p>
+                <p class="wpc-rolls-val"><span id="wpc-rolls">0</span> rolos</p>
+              </div>
+            </div>
+            <div class="wpc-rolls-vis" id="wpc-rolls-vis"></div>
+            <button type="button" class="wpc-whats-btn" id="wpc-whats-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l1.4-4.2A8 8 0 1 1 9 18.5L4 20Z" stroke-linejoin="round"></path></svg>
+              Solicitar orçamento no WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  function encontrarAreaDeCompra() {
+    return d.querySelector('.js-product-buy-container') || d.querySelector('.js-product-form') || d.querySelector('#product-form') || d.querySelector('.js-product-container');
+  }
+
+  function isPaginaDeProdutoUnico() {
+    return !!(encontrarAreaDeCompra() || d.getElementById('single-product'));
+  }
+
+  function initCalc() {
+    if (!isPaginaDeProdutoUnico()) return;
+
+    const alvo = encontrarAreaDeCompra();
+    const escopoProduto = d.getElementById('single-product') || d;
+
+    if (alvo && alvo.parentNode) {
+      alvo.parentNode.insertBefore(triggerWrap, alvo);
+    } else {
+      const fallback = escopoProduto.querySelector('h1') || escopoProduto;
+      if (fallback.parentNode) fallback.parentNode.insertBefore(triggerWrap, fallback.nextSibling);
+    }
+
+    triggerWrap.style.setProperty('display', 'block', 'important');
+    requestAnimationFrame(() => triggerWrap.classList.add('wpc-in'));
+    d.body.appendChild(overlay);
+
+    const triggerBtn = d.getElementById('wpc-trigger');
+    const closeBtn = d.getElementById('wpc-modal-close');
+
+    function openModal() {
+      overlay.classList.add('wpc-open');
+      d.body.style.overflow = 'hidden';
+      closeBtn.focus();
+    }
+    function closeModal() {
+      overlay.classList.remove('wpc-open');
+      d.body.style.overflow = '';
+      triggerBtn.focus();
+    }
+
+    triggerBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    d.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('wpc-open')) closeModal(); });
+
+    const covI = d.getElementById('wpc-cov');
+    const wI = d.getElementById('wpc-w');
+    const hI = d.getElementById('wpc-h');
+    const resultBox = d.getElementById('wpc-result');
+    const areaSpan = d.getElementById('wpc-area');
+    const rollsSpan = d.getElementById('wpc-rolls');
+    const rollsVis = d.getElementById('wpc-rolls-vis');
+    const whatsBtn = d.getElementById('wpc-whats-btn');
+
+    let ultimaArea = 0, ultimosRolos = 0, animArea = 0, animRolos = 0;
+
+    function margemAtual() {
+      const sel = d.querySelector('input[name="wpc-margin"]:checked');
+      return sel ? parseFloat(sel.value) : 0.10;
+    }
+
+    function nomeDoProduto() {
+      const el = d.querySelector('[data-store^="product-item-name"], .js-item-name, .product-title, .js-product-name, h1');
+      return (el?.textContent || d.title || 'este papel de parede').replace(/\s+/g, ' ').trim();
+    }
+
+    function animateValue(span, from, to, decimals) {
+      const dur = 450, start = performance.now();
+      function step(now) {
+        const p = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const cur = from + (to - from) * eased;
+        span.textContent = decimals ? cur.toFixed(decimals).replace('.', ',') : Math.round(cur);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function renderRolls(n) {
+      rollsVis.innerHTML = '';
+      const shown = Math.min(n, MAX_ICONS);
+      for (let i = 0; i < shown; i++) {
+        const span = d.createElement('span');
+        span.className = 'wpc-roll-ico';
+        span.style.animationDelay = (i * 40) + 'ms';
+        span.innerHTML = ROLL_ICON_SVG;
+        rollsVis.appendChild(span);
+      }
+      if (n > MAX_ICONS) {
+        const more = d.createElement('span');
+        more.className = 'wpc-roll-more';
+        more.style.animationDelay = (shown * 40) + 'ms';
+        more.textContent = '+' + (n - MAX_ICONS);
+        rollsVis.appendChild(more);
+      }
+    }
+
+    function update() {
+      const w = parseFloat(wI.value) || 0;
+      const h = parseFloat(hI.value) || 0;
+      const c = parseFloat(covI.value) || 0;
+      const m = margemAtual();
+
+      if (w > 0 && h > 0 && c > 0) {
+        const area = w * h;
+        const rolos = Math.ceil((area * (1 + m)) / c);
+        animateValue(areaSpan, animArea, area, 2);
+        animateValue(rollsSpan, animRolos, rolos, 0);
+        animArea = area; animRolos = rolos;
+        ultimaArea = area; ultimosRolos = rolos;
+        renderRolls(rolos);
+        resultBox.classList.add('wpc-show');
+      } else {
+        resultBox.classList.remove('wpc-show');
+      }
+    }
+
+    covI.addEventListener('input', update);
+    wI.addEventListener('input', update);
+    hI.addEventListener('input', update);
+    d.querySelectorAll('input[name="wpc-margin"]').forEach(r => r.addEventListener('change', update));
+
+    d.getElementById('wpc-cov-minus').addEventListener('click', () => {
+      covI.value = Math.max(0.1, (parseFloat(covI.value) || 0) - 0.1).toFixed(1);
+      update();
+    });
+    d.getElementById('wpc-cov-plus').addEventListener('click', () => {
+      covI.value = ((parseFloat(covI.value) || 0) + 0.1).toFixed(1);
+      update();
+    });
+
+    whatsBtn.addEventListener('click', () => {
+      if (!ultimosRolos) return;
+      const areaTxt = ultimaArea.toFixed(2).replace('.', ',');
+      const msg = encodeURIComponent(`Olá! Calculei no site que preciso de ${ultimosRolos} rolos (${areaTxt} m²) de ${nomeDoProduto()}. Gostaria de confirmar disponibilidade e valor.`);
+      window.open(`https://wa.me/${WHATSAPP_NUM}?text=${msg}`, '_blank', 'noopener');
+    });
+  }
+
+  if (d.readyState === 'complete') initCalc(); else window.addEventListener('load', initCalc);
+})();
