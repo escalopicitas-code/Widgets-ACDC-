@@ -9,15 +9,15 @@
     var style = document.createElement('style');
     style.id = CSS_ID;
     style.innerHTML = `
-      /* Container Principal: Design clean em formato de card moderno */
+      /* Container Principal: Design minimalista em Preto e Branco */
       .js-product-payments-container {
         background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
+        border: 1px solid #000000 !important; /* Borda preta fina */
+        border-radius: 8px !important;
         padding: 20px !important;
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
-        color: #334155 !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+        color: #000000 !important; /* Texto totalmente preto */
+        box-shadow: none !important; /* Removido sombras para visual mais limpo */
         margin-bottom: 24px !important;
       }
 
@@ -41,7 +41,7 @@
       .js-installment-amount {
         font-weight: 700 !important;
         font-size: 1.15rem !important;
-        color: #0f172a !important;
+        color: #000000 !important;
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
@@ -49,38 +49,38 @@
 
       /* Texto intermediário (ex: "de") */
       .product-installments span:not([class]) {
-        color: #64748b !important;
+        color: #000000 !important;
         font-size: 0.95rem !important;
       }
 
-      /* Valor da parcela - Foco na tipografia ao invés de blocos de cor */
+      /* Valor da parcela */
       .js-installment-price {
         font-weight: 800 !important;
         font-size: 1.15rem !important;
-        color: #0f172a !important;
+        color: #000000 !important;
         background: transparent !important;
         padding: 0 !important;
       }
 
-      /* Tag "Sem Juros" - Verde sofisticado e formato sutil */
+      /* Tag "Sem Juros" - Invertido para Preto e Branco */
       .product-installments span:last-child {
-        background: #dcfce7 !important;
-        color: #166534 !important;
-        font-weight: 600 !important;
+        background: #000000 !important; /* Fundo preto */
+        color: #ffffff !important;       /* Texto branco */
+        font-weight: 700 !important;
         font-size: 0.75rem !important;
         padding: 4px 8px !important;
-        border-radius: 6px !important;
+        border-radius: 4px !important;
         text-transform: uppercase !important;
         letter-spacing: 0.5px !important;
         margin-left: 4px !important;
       }
 
-      /* Caixa de Desconto do Pix - Fundo neutro com borda de destaque lateral */
+      /* Caixa de Desconto do Pix - Estrutura P&B com destaque lateral preto */
       .js-product-discount-container {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        border-left: 4px solid #10b981 !important; /* Destaque verde esmeralda */
-        border-radius: 8px !important;
+        background: #ffffff !important;
+        border: 1px solid #000000 !important;
+        border-left: 5px solid #000000 !important; /* Destaque lateral em preto */
+        border-radius: 6px !important;
         padding: 12px 16px !important;
         margin-bottom: 16px !important;
         display: flex;
@@ -89,29 +89,30 @@
         gap: 6px 8px;
       }
 
-      /* Texto de desconto em si (ex: 10% de desconto) */
+      /* Texto de desconto (ex: 10% de desconto) - Destaque em Vermelho */
       .text-accent {
-        color: #10b981 !important;
+        color: #ff0000 !important; /* VERMELHO para o desconto do Pix */
         font-weight: 800 !important;
-        font-size: 0.95rem !important;
+        font-size: 1.05rem !important;
         background: transparent !important;
         padding: 0 !important;
       }
 
       /* Texto "pagando com Pix" */
       .js-product-discount-container > span:not(.text-accent) {
-        color: #334155 !important;
-        font-weight: 500 !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
         font-size: 0.95rem !important;
       }
 
-      /* Disclaimer em itálico */
+      /* Disclaimer abaixo do Pix */
       .js-product-discount-disclaimer {
         width: 100% !important;
         font-size: 0.75rem !important;
-        color: #94a3b8 !important;
+        color: #000000 !important;
         margin-top: 2px !important;
         font-style: normal !important;
+        opacity: 0.7; /* Tom sutil usando opacidade do próprio preto */
       }
 
       /* Link "Ver mais detalhes" */
@@ -120,21 +121,22 @@
         align-items: center !important;
         gap: 6px !important;
         font-size: 0.85rem !important;
-        color: #64748b !important;
-        text-decoration: none !important;
+        color: #000000 !important;
+        text-decoration: underline !important; /* Sublinhado para indicar link no padrão P&B */
         font-weight: 600 !important;
-        transition: color 0.2s ease !important;
         border: none !important;
+        background: transparent !important;
+        cursor: pointer;
       }
 
       #btn-installments:hover {
-        color: #0f172a !important;
+        opacity: 0.7;
       }
 
       #btn-installments .icon-inline {
         width: 16px !important;
         height: 16px !important;
-        stroke: currentColor !important;
+        stroke: #000000 !important;
       }
 
       /* Responsividade mobile */
