@@ -12,17 +12,21 @@
     style.id = CSS_ID;
     style.textContent = `
 
-      /* ════════════════════════════════════════════════
-         BREADCRUMB
-         Início . Móveis . Puffs . Puff Ibiza
-      ════════════════════════════════════════════════ */
+      /* ─────────────────────────────────────────────────
+         FILOSOFIA: sem caixas, sem sombras, sem radius.
+         Linhas finas de 1px como separadores editoriais.
+         Tipografia como protagonista.
+         Referências: Minotti, B&B Italia, Roche Bobois.
+      ───────────────────────────────────────────────── */
+
+      /* BREADCRUMB */
       .breadcrumb,
       .product-breadcrumb {
         display: flex !important;
         align-items: center !important;
         flex-wrap: wrap !important;
         gap: 0 !important;
-        margin-bottom: 14px !important;
+        margin-bottom: 20px !important;
         padding: 0 !important;
         list-style: none !important;
       }
@@ -31,93 +35,83 @@
       .breadcrumb li,
       .product-breadcrumb a,
       .product-breadcrumb span {
-        font-size: 10.5px !important;
-        font-weight: 600 !important;
-        letter-spacing: .08em !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: .14em !important;
         text-transform: uppercase !important;
-        color: #aaaaaa !important;
+        color: #b0b0b0 !important;
         text-decoration: none !important;
+        transition: color .2s ease !important;
       }
       .breadcrumb a:hover,
       .product-breadcrumb a:hover {
         color: #1a1a1a !important;
       }
-      /* separador " . " */
       .breadcrumb .breadcrumb-separator,
       .breadcrumb li + li::before,
       .breadcrumb span.separator {
-        color: #cccccc !important;
-        margin: 0 6px !important;
-        font-weight: 400 !important;
+        color: #d8d8d8 !important;
+        margin: 0 8px !important;
+        font-weight: 300 !important;
       }
-      /* último item (nome do produto atual) */
       .breadcrumb li:last-child,
       .breadcrumb li:last-child a,
       .breadcrumb li:last-child span,
       .breadcrumb .active {
         color: #1a1a1a !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
       }
 
-      /* ════════════════════════════════════════════════
-         NOME DO PRODUTO (H1)
-      ════════════════════════════════════════════════ */
+      /* NOME DO PRODUTO */
       #single-product h1,
       .product-name,
       h1.product-name {
-        font-size: clamp(1.4rem, 2.6vw, 2rem) !important;
-        font-weight: 900 !important;
-        letter-spacing: -.025em !important;
-        line-height: 1.1 !important;
+        font-size: clamp(1.5rem, 2.8vw, 2.1rem) !important;
+        font-weight: 300 !important;
+        letter-spacing: .04em !important;
+        line-height: 1.15 !important;
         color: #1a1a1a !important;
-        margin: 0 0 18px 0 !important;
+        margin: 0 0 22px 0 !important;
       }
 
-      /* SKU / código do produto (abaixo do nome, se houver) */
+      /* SKU */
       .product-sku,
       .js-product-sku {
-        font-size: 10.5px !important;
-        font-weight: 600 !important;
-        letter-spacing: .1em !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: .14em !important;
         text-transform: uppercase !important;
-        color: #aaaaaa !important;
-        margin-bottom: 16px !important;
+        color: #bbbbbb !important;
+        margin-bottom: 18px !important;
       }
 
-      /* ════════════════════════════════════════════════
-         ÁREA DE PREÇO
-         R$650,00 · -10% OFF · R$585,00 com Pix
-      ════════════════════════════════════════════════ */
+      /* PREÇO PRINCIPAL */
       .product-price,
       .js-product-price {
         display: flex !important;
         align-items: baseline !important;
         flex-wrap: wrap !important;
-        gap: 6px 10px !important;
-        margin-bottom: 6px !important;
+        gap: 6px 12px !important;
+        margin-bottom: 4px !important;
       }
-
-      /* preço principal */
       .js-price-display,
       .product-price .price,
       .item-price {
-        font-size: 1.6rem !important;
-        font-weight: 900 !important;
-        letter-spacing: -.03em !important;
+        font-size: 1.55rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .01em !important;
         color: #1a1a1a !important;
       }
-
-      /* preço riscado (de) */
       .product-compare-price,
       .js-compare-price,
       .price-compare {
-        font-size: 1rem !important;
-        font-weight: 500 !important;
-        color: #aaaaaa !important;
+        font-size: 0.95rem !important;
+        font-weight: 400 !important;
+        color: #c0c0c0 !important;
         text-decoration: line-through !important;
       }
 
-      /* badge de desconto "-10% OFF" */
+      /* badge "-10% OFF" — fino, sem preenchimento */
       .product-discount,
       .product-label,
       .js-product-discount,
@@ -125,43 +119,48 @@
       [class*="product-label"] {
         display: inline-flex !important;
         align-items: center !important;
-        background: #f5f5f5 !important;
+        background: transparent !important;
         border: 1px solid #1a1a1a !important;
+        border-radius: 0 !important;
         color: #1a1a1a !important;
-        font-size: 9.5px !important;
-        font-weight: 700 !important;
-        letter-spacing: .08em !important;
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        letter-spacing: .12em !important;
         text-transform: uppercase !important;
-        padding: 3px 9px !important;
-        border-radius: 3px !important;
+        padding: 2px 7px !important;
       }
 
-      /* "R$585,00 com Pix" — linha abaixo do preço principal */
+      /* "R$1.350,00 com Pix" */
       .js-product-price-pix,
       .product-price-pix,
       .price-pix {
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
-        color: #555555 !important;
-        margin-bottom: 16px !important;
+        font-size: 0.82rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .02em !important;
+        color: #888888 !important;
+        margin-bottom: 0 !important;
         display: block !important;
       }
       .js-product-price-pix strong,
       .product-price-pix strong,
       .price-pix strong {
-        font-weight: 800 !important;
+        font-weight: 500 !important;
         color: #1a1a1a !important;
       }
 
-      /* ════════════════════════════════════════════════
+      /* ─────────────────────────────────────────────────
          BLOCO DE PAGAMENTOS
-         (parcelamento + desconto Pix)
-      ════════════════════════════════════════════════ */
+         Sem card. Separado da área de preço por uma
+         linha fina de 1px. Parcelamento e Pix como
+         linhas de texto, não como widgets.
+      ───────────────────────────────────────────────── */
       .js-product-payments-container {
-        background: #ffffff !important;
-        border: 1px solid #e5e5e5 !important;
-        border-radius: 10px !important;
-        padding: 16px 18px !important;
+        background: transparent !important;
+        border: none !important;
+        border-top: 1px solid #e8e8e8 !important;
+        border-radius: 0 !important;
+        padding: 22px 0 0 0 !important;
+        margin-top: 20px !important;
         margin-bottom: 20px !important;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         color: #1a1a1a !important;
@@ -172,150 +171,154 @@
       .js-max-installments-container,
       .product-installments {
         display: flex !important;
-        align-items: center !important;
+        align-items: baseline !important;
         flex-wrap: wrap !important;
-        gap: 5px 7px !important;
+        gap: 4px 8px !important;
         margin-bottom: 0 !important;
       }
       .js-max-installments-container {
-        margin-bottom: 12px !important;
+        margin-bottom: 16px !important;
       }
 
       .js-installment-amount,
       .js-installment-price {
-        font-weight: 800 !important;
-        font-size: 1.05rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        letter-spacing: .01em !important;
         color: #1a1a1a !important;
         background: transparent !important;
         border: none !important;
         padding: 0 !important;
       }
 
-      /* "de", "no" e outros textos da linha */
+      /* "de", "no", "x" */
       .product-installments span:not([class]):not(:last-of-type) {
-        color: #555555 !important;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         font-weight: 400 !important;
+        color: #888888 !important;
+        letter-spacing: .02em !important;
       }
 
-      /* badge "Sem Juros" */
+      /* "SEM JUROS" — só um contorno fino, sem preenchimento */
       .js-installment-interest-free,
       .product-installments .installment-interest-free {
         display: inline-flex !important;
         align-items: center !important;
-        background: #f5f5f5 !important;
+        background: transparent !important;
         border: 1px solid #1a1a1a !important;
+        border-radius: 0 !important;
         color: #1a1a1a !important;
-        font-size: 9.5px !important;
-        font-weight: 700 !important;
-        letter-spacing: .08em !important;
+        font-size: 8.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: .14em !important;
         text-transform: uppercase !important;
-        padding: 3px 8px !important;
-        border-radius: 3px !important;
-        margin-left: 2px !important;
+        padding: 2px 6px !important;
+        margin-left: 3px !important;
+        vertical-align: middle !important;
       }
 
-      /* bloco desconto Pix */
+      /* desconto Pix — linha de texto separada por 1px,
+         sem fundo, sem borda arredondada */
       .js-product-discount-container {
         display: flex !important;
-        align-items: center !important;
+        align-items: baseline !important;
         flex-wrap: wrap !important;
-        gap: 5px 7px !important;
-        background: #f7f7f7 !important;
-        border: 1px solid #e0e0e0 !important;
-        border-radius: 8px !important;
-        padding: 11px 14px !important;
-        margin-bottom: 14px !important;
+        gap: 4px 6px !important;
+        background: transparent !important;
+        border: none !important;
+        border-top: 1px solid #eeeeee !important;
+        border-radius: 0 !important;
+        padding: 16px 0 0 0 !important;
+        margin-bottom: 16px !important;
       }
 
+      /* "10% de desconto" */
       .text-accent {
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        letter-spacing: .01em !important;
         color: #1a1a1a !important;
-        font-weight: 900 !important;
-        font-size: 1rem !important;
         background: transparent !important;
         padding: 0 !important;
       }
 
+      /* "pagando com Pix" */
       .js-product-discount-container > span:not(.text-accent):not(.js-product-discount-disclaimer) {
-        color: #444444 !important;
-        font-weight: 500 !important;
-        font-size: 0.88rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .01em !important;
+        color: #888888 !important;
       }
 
+      /* "Não acumulável com outras promoções" */
       .js-product-discount-disclaimer {
         width: 100% !important;
-        font-size: 0.72rem !important;
-        color: #999999 !important;
-        margin-top: 3px !important;
-        font-style: italic !important;
+        font-size: 9.5px !important;
+        font-weight: 400 !important;
+        letter-spacing: .1em !important;
+        text-transform: uppercase !important;
+        color: #c0c0c0 !important;
+        margin-top: 5px !important;
+        font-style: normal !important;
         opacity: 1 !important;
       }
 
-      /* link "Ver mais formas de pagamento" */
+      /* "VER MAIS DETALHES" — só texto uppercase espaçado */
       #btn-installments {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 5px !important;
-        font-size: 0.78rem !important;
-        font-weight: 700 !important;
-        letter-spacing: .07em !important;
+        gap: 6px !important;
+        font-size: 9.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: .18em !important;
         text-transform: uppercase !important;
-        color: #1a1a1a !important;
+        color: #888888 !important;
         text-decoration: none !important;
-        border-bottom: 1px solid #1a1a1a !important;
-        border-top: none !important;
-        border-left: none !important;
-        border-right: none !important;
+        border: none !important;
         background: transparent !important;
         cursor: pointer !important;
-        padding: 0 0 1px 0 !important;
-        transition: opacity .2s ease !important;
-        margin-top: 2px !important;
+        padding: 0 !important;
+        transition: color .25s ease !important;
+        margin-top: 0 !important;
       }
       #btn-installments:hover {
-        opacity: .6 !important;
+        color: #1a1a1a !important;
       }
       #btn-installments .icon-inline {
-        width: 14px !important;
-        height: 14px !important;
-        stroke: #1a1a1a !important;
+        width: 13px !important;
+        height: 13px !important;
+        stroke: currentColor !important;
+        transition: stroke .25s ease !important;
       }
 
-      /* ════════════════════════════════════════════════
-         AVISOS ("Atenção, última peça!" etc.)
-      ════════════════════════════════════════════════ */
+      /* AVISO DE ESTOQUE — só texto uppercase, sem box */
       .product-stock-message,
       .js-product-stock-message,
       .product-last-items {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        font-size: 10.5px !important;
-        font-weight: 700 !important;
-        letter-spacing: .08em !important;
+        display: inline-block !important;
+        font-size: 9.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: .14em !important;
         text-transform: uppercase !important;
         color: #1a1a1a !important;
-        background: #f5f5f5 !important;
-        border: 1px solid #1a1a1a !important;
-        border-radius: 3px !important;
-        padding: 4px 10px !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
         margin-bottom: 14px !important;
       }
 
       @media (max-width: 576px) {
-        .js-product-payments-container {
-          padding: 13px 14px !important;
-        }
         #single-product h1,
         .product-name {
           font-size: 1.3rem !important;
+          letter-spacing: .02em !important;
         }
       }
     `;
     document.head.appendChild(style);
   }
 
-  // Garante que o bloco de desconto fique antes do link "Ver mais"
   function reordenar() {
     var container = document.querySelector('.js-product-payments-container');
     if (!container) return;
@@ -329,13 +332,11 @@
   function init() {
     injectCSS();
     reordenar();
-
     var tentativas = 0;
     var intervalo = setInterval(function () {
       reordenar();
       if (++tentativas >= 8) clearInterval(intervalo);
     }, 250);
-
     window.addEventListener('load', reordenar);
   }
 
