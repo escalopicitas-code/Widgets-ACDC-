@@ -1,193 +1,325 @@
-(function() {
-  "use strict";
+(function () {
+  'use strict';
 
-  var CSS_ID = 'acdc-payments-luxury-style';
-  var done = false;
+  if (window.__acdcProductPageInit) return;
+  window.__acdcProductPageInit = true;
+
+  var CSS_ID = 'acdc-product-page-style';
 
   function injectCSS() {
     if (document.getElementById(CSS_ID)) return;
     var style = document.createElement('style');
     style.id = CSS_ID;
-    style.innerHTML = `
-      /* Animação de entrada sutil para efeito premium */
-      @keyframes premiumFadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
+    style.textContent = `
 
-      /* Container Principal: Estilo Galeria de Arte / Alta Joalheria */
-      .js-product-payments-container {
-        background: #ffffff !important;
-        border: 1px solid #000000 !important; /* Linha preta fina e precisa */
-        border-radius: 0px !important; /* Cantos retos = Design Arquitetônico/Sofisticado */
-        padding: 24px !important;
-        font-family: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif !important;
-        color: #000000 !important;
-        box-shadow: none !important;
-        margin-bottom: 24px !important;
-        animation: premiumFadeIn 0.5s ease-out forwards;
-      }
+      /* ─────────────────────────────────────────────────
+         FILOSOFIA: sem caixas, sem sombras, sem radius.
+         Linhas finas de 1px como separadores editoriais.
+         Tipografia como protagonista.
+         Referências: Minotti, B&B Italia, Roche Bobois.
+      ───────────────────────────────────────────────── */
 
-      /* Grid das parcelas */
-      .js-max-installments-container {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
+      /* BREADCRUMB */
+      .breadcrumb,
+      .product-breadcrumb {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 0 !important;
         margin-bottom: 20px !important;
+        padding: 0 !important;
+        list-style: none !important;
       }
-
-      .product-installments {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      /* Parcelamento (ex: 12x) */
-      .js-installment-amount {
-        font-weight: 700 !important;
-        font-size: 1.2rem !important;
-        letter-spacing: -0.02em !important;
-        color: #000000 !important;
-      }
-
-      /* Conector "de" */
-      .product-installments span:not([class]) {
-        color: #000000 !important;
-        font-size: 0.95rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        opacity: 0.8;
-      }
-
-      /* Valor da Parcela */
-      .js-installment-price {
-        font-weight: 700 !important;
-        font-size: 1.2rem !important;
-        letter-spacing: -0.02em !important;
-        color: #000000 !important;
-      }
-
-      /* Tag "Sem Juros" - Minimalista e imponente */
-      .product-installments span:last-child {
-        background: #000000 !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 0.7rem !important;
-        padding: 3px 8px !important;
-        border-radius: 0px !important; /* Reto */
-        text-transform: uppercase !important;
-        letter-spacing: 0.1em !important; /* Letras espaçadas estilo grife */
-        margin-left: 8px !important;
-      }
-
-      /* Bloco de Desconto (Pix / À Vista) - Limpo e Direto */
-      .js-product-discount-container {
-        background: #ffffff !important;
-        border-top: 1px dashed #000000 !important; /* Divisor elegante interno */
-        border-bottom: 1px dashed #000000 !important;
-        border-left: none !important;
-        border-right: none !important;
-        border-radius: 0px !important;
-        padding: 16px 0px !important;
-        margin-bottom: 20px !important;
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 4px 8px;
-      }
-
-      /* O preço com desconto / porcentagem em Vermelho Puro de Destaque */
-      .text-accent {
-        color: #E31837 !important; /* Vermelho vivo, sério e corporativo */
-        font-weight: 700 !important;
-        font-size: 1.15rem !important;
-        letter-spacing: -0.01em !important;
-      }
-
-      /* Texto complementar "pagando com Pix" ou "à vista" */
-      .js-product-discount-container > span:not(.text-accent) {
-        color: #000000 !important;
+      .breadcrumb a,
+      .breadcrumb span,
+      .breadcrumb li,
+      .product-breadcrumb a,
+      .product-breadcrumb span {
+        font-size: 10px !important;
         font-weight: 500 !important;
-        font-size: 1rem !important;
-        letter-spacing: -0.01em !important;
+        letter-spacing: .14em !important;
+        text-transform: uppercase !important;
+        color: #b0b0b0 !important;
+        text-decoration: none !important;
+        transition: color .2s ease !important;
+      }
+      .breadcrumb a:hover,
+      .product-breadcrumb a:hover {
+        color: #1a1a1a !important;
+      }
+      .breadcrumb .breadcrumb-separator,
+      .breadcrumb li + li::before,
+      .breadcrumb span.separator {
+        color: #d8d8d8 !important;
+        margin: 0 8px !important;
+        font-weight: 300 !important;
+      }
+      .breadcrumb li:last-child,
+      .breadcrumb li:last-child a,
+      .breadcrumb li:last-child span,
+      .breadcrumb .active {
+        color: #1a1a1a !important;
+        font-weight: 600 !important;
       }
 
-      /* Notas de rodapé / Disclaimer */
+      /* NOME DO PRODUTO */
+      #single-product h1,
+      .product-name,
+      h1.product-name {
+        font-size: clamp(1.5rem, 2.8vw, 2.1rem) !important;
+        font-weight: 300 !important;
+        letter-spacing: .04em !important;
+        line-height: 1.15 !important;
+        color: #1a1a1a !important;
+        margin: 0 0 22px 0 !important;
+      }
+
+      /* SKU */
+      .product-sku,
+      .js-product-sku {
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: .14em !important;
+        text-transform: uppercase !important;
+        color: #bbbbbb !important;
+        margin-bottom: 18px !important;
+      }
+
+      /* PREÇO PRINCIPAL */
+      .product-price,
+      .js-product-price {
+        display: flex !important;
+        align-items: baseline !important;
+        flex-wrap: wrap !important;
+        gap: 6px 12px !important;
+        margin-bottom: 4px !important;
+      }
+      .js-price-display,
+      .product-price .price,
+      .item-price {
+        font-size: 1.55rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .01em !important;
+        color: #1a1a1a !important;
+      }
+      .product-compare-price,
+      .js-compare-price,
+      .price-compare {
+        font-size: 0.95rem !important;
+        font-weight: 400 !important;
+        color: #c0c0c0 !important;
+        text-decoration: line-through !important;
+      }
+
+      /* badge "-10% OFF" — fino, sem preenchimento */
+      .product-discount,
+      .product-label,
+      .js-product-discount,
+      [class*="discount-badge"],
+      [class*="product-label"] {
+        display: inline-flex !important;
+        align-items: center !important;
+        background: transparent !important;
+        border: 1px solid #1a1a1a !important;
+        border-radius: 0 !important;
+        color: #1a1a1a !important;
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        letter-spacing: .12em !important;
+        text-transform: uppercase !important;
+        padding: 2px 7px !important;
+      }
+
+      /* "R$1.350,00 com Pix" */
+      .js-product-price-pix,
+      .product-price-pix,
+      .price-pix {
+        font-size: 0.82rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .02em !important;
+        color: #888888 !important;
+        margin-bottom: 0 !important;
+        display: block !important;
+      }
+      .js-product-price-pix strong,
+      .product-price-pix strong,
+      .price-pix strong {
+        font-weight: 500 !important;
+        color: #1a1a1a !important;
+      }
+
+      /* ─────────────────────────────────────────────────
+         BLOCO DE PAGAMENTOS
+         Sem card. Separado da área de preço por uma
+         linha fina de 1px. Parcelamento e Pix como
+         linhas de texto, não como widgets.
+      ───────────────────────────────────────────────── */
+      .js-product-payments-container {
+        background: transparent !important;
+        border: none !important;
+        border-top: 1px solid #e8e8e8 !important;
+        border-radius: 0 !important;
+        padding: 22px 0 0 0 !important;
+        margin-top: 20px !important;
+        margin-bottom: 20px !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        color: #1a1a1a !important;
+        box-shadow: none !important;
+      }
+
+      /* linha de parcelamento */
+      .js-max-installments-container,
+      .product-installments {
+        display: flex !important;
+        align-items: baseline !important;
+        flex-wrap: wrap !important;
+        gap: 4px 8px !important;
+        margin-bottom: 0 !important;
+      }
+      .js-max-installments-container {
+        margin-bottom: 16px !important;
+      }
+
+      .js-installment-amount,
+      .js-installment-price {
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        letter-spacing: .01em !important;
+        color: #1a1a1a !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+
+      /* "de", "no", "x" */
+      .product-installments span:not([class]):not(:last-of-type) {
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
+        color: #888888 !important;
+        letter-spacing: .02em !important;
+      }
+
+      /* "SEM JUROS" — só um contorno fino, sem preenchimento */
+      .js-installment-interest-free,
+      .product-installments .installment-interest-free {
+        display: inline-flex !important;
+        align-items: center !important;
+        background: transparent !important;
+        border: 1px solid #1a1a1a !important;
+        border-radius: 0 !important;
+        color: #1a1a1a !important;
+        font-size: 8.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: .14em !important;
+        text-transform: uppercase !important;
+        padding: 2px 6px !important;
+        margin-left: 3px !important;
+        vertical-align: middle !important;
+      }
+
+      /* desconto Pix — linha de texto separada por 1px,
+         sem fundo, sem borda arredondada */
+      .js-product-discount-container {
+        display: flex !important;
+        align-items: baseline !important;
+        flex-wrap: wrap !important;
+        gap: 4px 6px !important;
+        background: transparent !important;
+        border: none !important;
+        border-top: 1px solid #eeeeee !important;
+        border-radius: 0 !important;
+        padding: 16px 0 0 0 !important;
+        margin-bottom: 16px !important;
+      }
+
+      /* "10% de desconto" */
+      .text-accent {
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        letter-spacing: .01em !important;
+        color: #1a1a1a !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      /* "pagando com Pix" */
+      .js-product-discount-container > span:not(.text-accent):not(.js-product-discount-disclaimer) {
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
+        letter-spacing: .01em !important;
+        color: #888888 !important;
+      }
+
+      /* "Não acumulável com outras promoções" */
       .js-product-discount-disclaimer {
         width: 100% !important;
-        font-size: 0.75rem !important;
-        color: #000000 !important;
-        opacity: 0.6;
-        letter-spacing: 0.02em !important;
-        text-transform: uppercase;
+        font-size: 9.5px !important;
+        font-weight: 400 !important;
+        letter-spacing: .1em !important;
+        text-transform: uppercase !important;
+        color: #c0c0c0 !important;
+        margin-top: 5px !important;
+        font-style: normal !important;
+        opacity: 1 !important;
       }
 
-      /* Botão "Ver mais detalhes" com efeito de linha inteligente */
+      /* "VER MAIS DETALHES" — só texto uppercase espaçado */
       #btn-installments {
         display: inline-flex !important;
         align-items: center !important;
         gap: 6px !important;
-        font-size: 0.8rem !important;
-        color: #000000 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.08em !important;
-        text-decoration: none !important;
+        font-size: 9.5px !important;
         font-weight: 600 !important;
+        letter-spacing: .18em !important;
+        text-transform: uppercase !important;
+        color: #888888 !important;
+        text-decoration: none !important;
         border: none !important;
         background: transparent !important;
-        cursor: pointer;
-        padding: 4px 0 !important;
-        position: relative;
-        transition: opacity 0.2s ease;
+        cursor: pointer !important;
+        padding: 0 !important;
+        transition: color .25s ease !important;
+        margin-top: 0 !important;
       }
-
-      /* Efeito de Underline sofisticado no hover */
-      #btn-installments::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background-color: #000000;
-        transform: scaleX(0);
-        transform-origin: right;
-        transition: transform 0.3s ease;
-      }
-
-      #btn-installments:hover::after {
-        transform: scaleX(1);
-        transform-origin: left;
-      }
-
       #btn-installments:hover {
-        opacity: 0.7;
+        color: #1a1a1a !important;
       }
-
       #btn-installments .icon-inline {
-        width: 12px !important;
-        height: 12px !important;
-        stroke: #000000 !important;
-        transition: transform 0.3s ease;
-      }
-      
-      #btn-installments:hover .icon-inline {
-        transform: translateX(2px); /* Micro-movimento premium na seta */
+        width: 13px !important;
+        height: 13px !important;
+        stroke: currentColor !important;
+        transition: stroke .25s ease !important;
       }
 
-      /* Ajuste responsivo */
+      /* AVISO DE ESTOQUE — só texto uppercase, sem box */
+      .product-stock-message,
+      .js-product-stock-message,
+      .product-last-items {
+        display: inline-block !important;
+        font-size: 9.5px !important;
+        font-weight: 600 !important;
+        letter-spacing: .14em !important;
+        text-transform: uppercase !important;
+        color: #1a1a1a !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin-bottom: 14px !important;
+      }
+
       @media (max-width: 576px) {
-        .js-product-payments-container {
-          padding: 16px !important;
+        #single-product h1,
+        .product-name {
+          font-size: 1.3rem !important;
+          letter-spacing: .02em !important;
         }
       }
     `;
     document.head.appendChild(style);
   }
 
-  function reorderIfNeeded() {
+  function reordenar() {
     var container = document.querySelector('.js-product-payments-container');
     if (!container) return;
     var discount = container.querySelector('.js-product-discount-container');
@@ -198,13 +330,14 @@
   }
 
   function init() {
-    if (done) return;
     injectCSS();
-    reorderIfNeeded();
-    setTimeout(reorderIfNeeded, 300);
-    setTimeout(reorderIfNeeded, 800);
-    window.addEventListener('load', reorderIfNeeded);
-    done = true;
+    reordenar();
+    var tentativas = 0;
+    var intervalo = setInterval(function () {
+      reordenar();
+      if (++tentativas >= 8) clearInterval(intervalo);
+    }, 250);
+    window.addEventListener('load', reordenar);
   }
 
   if (document.readyState === 'loading') {
@@ -213,14 +346,13 @@
     init();
   }
 
-  if (window.MutationObserver) {
-    var observer = new MutationObserver(function() {
-      if (document.querySelector('.js-product-payments-container')) {
-        injectCSS();
-        reorderIfNeeded();
-        observer.disconnect();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
+  var obs = new MutationObserver(function (mutations, observer) {
+    if (document.querySelector('.js-product-payments-container')) {
+      injectCSS();
+      reordenar();
+      observer.disconnect();
+    }
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+
 })();
