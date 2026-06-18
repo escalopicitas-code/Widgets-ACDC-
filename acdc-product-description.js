@@ -1,369 +1,226 @@
 (function() {
   "use strict";
 
-  /* ---------- CONFIGURAÇÕES ---------- */
-  const CSS_ID = 'acdc-description-style';
-  const READY_FLAG = 'acdcReady';
-  let built = false;
+  var CSS_ID = 'acdc-payments-luxury-style';
+  var done = false;
 
-  /* ---------- INJEÇÃO DE CSS (APARÊNCIA MELHORADA) ---------- */
   function injectCSS() {
     if (document.getElementById(CSS_ID)) return;
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.id = CSS_ID;
     style.innerHTML = `
-      :root{
-        --acdc-gap:10px;
-        --acdc-padding:16px;
-        --acdc-border:#e9e9e9;
-        --acdc-muted:#5b5b5b;
-        --acdc-bg:#fff;
-        --acdc-accent:#111;
-        --acdc-radius:8px;
-        --acdc-transition:all .3s cubic-bezier(.2,.9,.3,1);
+      /* Animação de entrada sutil para efeito premium */
+      @keyframes premiumFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
       }
 
-      [data-store*="product-description"] > h6 {
-        display: none !important;
+      /* Container Principal: Estilo Galeria de Arte / Alta Joalheria */
+      .js-product-payments-container {
+        background: #ffffff !important;
+        border: 1px solid #000000 !important; /* Linha preta fina e precisa */
+        border-radius: 0px !important; /* Cantos retos = Design Arquitetônico/Sofisticado */
+        padding: 24px !important;
+        font-family: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        margin-bottom: 24px !important;
+        animation: premiumFadeIn 0.5s ease-out forwards;
       }
 
-      .acdc-product-description{
-        width:100%;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        color:var(--acdc-accent);
-        background:transparent;
-        line-height:1.4;
-      }
-
-      .acdc-section{
-        padding:var(--acdc-padding) 0;
-        border-top:1px solid var(--acdc-border);
-      }
-
-      .acdc-section:first-child{
-        border-top:0;
-        padding-top:0;
-      }
-
-      .acdc-section h3{
-        margin:0 0 12px;
-        font-size:clamp(16px, 1.8vw, 19px);
-        font-weight:700;
-        letter-spacing:0.2px;
-      }
-
-      /* Detalhes (título + valor) em linha, com separação visual */
-      .acdc-row{
-        display:flex;
-        flex-wrap:wrap;
-        align-items:baseline;
-        gap:4px 8px;
-        margin-bottom:10px;
-        padding-bottom:6px;
-        border-bottom:1px dashed #eee;
-      }
-      .acdc-row:last-child{
-        margin-bottom:0;
-        border-bottom:0;
-      }
-
-      .acdc-label{
-        font-weight:700;
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 0.4px;
-        color:var(--acdc-accent);
-        white-space:nowrap;
-      }
-
-      .acdc-value{
-        color:var(--acdc-muted);
-        font-size:clamp(13px,1.4vw,15px);
-        word-break:break-word;
-      }
-
-      /* Dimensões – grid mais compacto e com mais colunas */
-      .acdc-dimensions{
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:10px;
-      }
-
-      .acdc-dimension{
-        padding:12px 10px;
-        border:1px solid var(--acdc-border);
-        background:var(--acdc-bg);
-        border-radius:var(--acdc-radius);
-        opacity:0;
-        transform:translateY(10px);
-        transition:var(--acdc-transition);
-        display:flex;
-        flex-direction:column;
+      /* Grid das parcelas */
+      .js-max-installments-container {
+        display: flex;
         align-items: center;
-        justify-content:center;
-        text-align: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px !important;
       }
 
-      .acdc-dimension.visible{
-        opacity:1;
-        transform:translateY(0);
+      .product-installments {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
       }
 
-      .acdc-dimension:hover{
-        transform:translateY(-4px);
-        box-shadow:0 8px 20px rgba(0,0,0,.04);
-        border-color:#ccc;
+      /* Parcelamento (ex: 12x) */
+      .js-installment-amount {
+        font-weight: 700 !important;
+        font-size: 1.2rem !important;
+        letter-spacing: -0.02em !important;
+        color: #000000 !important;
       }
 
-      .acdc-dimension-label{
-        font-size:11px;
-        color:#777;
-        margin-bottom:4px;
-        text-transform: capitalize;
-        letter-spacing:0.2px;
+      /* Conector "de" */
+      .product-installments span:not([class]) {
+        color: #000000 !important;
+        font-size: 0.95rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.8;
       }
 
-      .acdc-dimension-value{
-        font-size:clamp(16px,2vw,22px);
-        font-weight:700;
-        color:var(--acdc-accent);
-        line-height:1.2;
+      /* Valor da Parcela */
+      .js-installment-price {
+        font-weight: 700 !important;
+        font-size: 1.2rem !important;
+        letter-spacing: -0.02em !important;
+        color: #000000 !important;
       }
 
-      /* Observações compactas e elegantes */
-      .acdc-notes{
-        margin-top: 18px;
-        padding: 10px 16px;
-        background-color: #f7f7f7;
-        border-radius: var(--acdc-radius);
-        text-align: left;
-        font-size:13px;
-        color:#555;
-        line-height:1.5;
+      /* Tag "Sem Juros" - Minimalista e imponente */
+      .product-installments span:last-child {
+        background: #000000 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.7rem !important;
+        padding: 3px 8px !important;
+        border-radius: 0px !important; /* Reto */
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important; /* Letras espaçadas estilo grife */
+        margin-left: 8px !important;
       }
 
-      .acdc-notes p{
-        margin:0 0 2px;
-        font-weight:400;
-        letter-spacing:0.1px;
-      }
-      .acdc-notes p:last-child{
-        margin-bottom:0;
-      }
-
-      .acdc-product-description img{
-        max-width:100%;
-        height:auto;
-        display:block;
-        margin:0 auto 10px;
-        object-fit:contain;
-        border-radius:6px;
+      /* Bloco de Desconto (Pix / À Vista) - Limpo e Direto */
+      .js-product-discount-container {
+        background: #ffffff !important;
+        border-top: 1px dashed #000000 !important; /* Divisor elegante interno */
+        border-bottom: 1px dashed #000000 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0px !important;
+        padding: 16px 0px !important;
+        margin-bottom: 20px !important;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 8px;
       }
 
-      /* Responsivo */
-      @media(max-width:900px){
-        .acdc-dimensions{
-          grid-template-columns:repeat(2,1fr);
-        }
+      /* O preço com desconto / porcentagem em Vermelho Puro de Destaque */
+      .text-accent {
+        color: #E31837 !important; /* Vermelho vivo, sério e corporativo */
+        font-weight: 700 !important;
+        font-size: 1.15rem !important;
+        letter-spacing: -0.01em !important;
       }
 
-      @media(max-width:480px){
-        .acdc-dimensions{
-          grid-template-columns:1fr;
-          gap:8px;
-        }
-        .acdc-dimension{
-          padding:10px 8px;
-        }
-        .acdc-section h3{
-          font-size:16px;
-        }
-        .acdc-row{
-          flex-direction:column;
-          align-items:flex-start;
-          gap:2px;
+      /* Texto complementar "pagando com Pix" ou "à vista" */
+      .js-product-discount-container > span:not(.text-accent) {
+        color: #000000 !important;
+        font-weight: 500 !important;
+        font-size: 1rem !important;
+        letter-spacing: -0.01em !important;
+      }
+
+      /* Notas de rodapé / Disclaimer */
+      .js-product-discount-disclaimer {
+        width: 100% !important;
+        font-size: 0.75rem !important;
+        color: #000000 !important;
+        opacity: 0.6;
+        letter-spacing: 0.02em !important;
+        text-transform: uppercase;
+      }
+
+      /* Botão "Ver mais detalhes" com efeito de linha inteligente */
+      #btn-installments {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.8rem !important;
+        color: #000000 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        border: none !important;
+        background: transparent !important;
+        cursor: pointer;
+        padding: 4px 0 !important;
+        position: relative;
+        transition: opacity 0.2s ease;
+      }
+
+      /* Efeito de Underline sofisticado no hover */
+      #btn-installments::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: #000000;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.3s ease;
+      }
+
+      #btn-installments:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+
+      #btn-installments:hover {
+        opacity: 0.7;
+      }
+
+      #btn-installments .icon-inline {
+        width: 12px !important;
+        height: 12px !important;
+        stroke: #000000 !important;
+        transition: transform 0.3s ease;
+      }
+      
+      #btn-installments:hover .icon-inline {
+        transform: translateX(2px); /* Micro-movimento premium na seta */
+      }
+
+      /* Ajuste responsivo */
+      @media (max-width: 576px) {
+        .js-product-payments-container {
+          padding: 16px !important;
         }
       }
     `;
     document.head.appendChild(style);
   }
 
-  /* ---------- UTILITÁRIOS ---------- */
-  const sanitize = s => String(s || '').trim().replace(/\s+/g, ' ');
-  const escapeHtml = str =>
-    String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-  function addDefaultUnit(label, value) {
-    if (/[a-zA-Z]/.test(value)) return value;
-    if (/peso/.test(label.toLowerCase())) return value + ' kg';
-    return value + ' cm';
-  }
-
-  function findContainer() {
-    return document.querySelector('[data-store*="product-description"] .user-content') ||
-           document.querySelector('.user-content.font-small.mb-4');
-  }
-
-  /* ---------- ANIMAÇÃO ---------- */
-  function animateCards() {
-    document.querySelectorAll('.acdc-dimension').forEach(card => card.classList.add('visible'));
-  }
-
-  /* ---------- CONSTRUÇÃO DO HTML ---------- */
-  function buildDescription(container) {
-    if (container.dataset[READY_FLAG] === 'true') return false;
-
-    const raw = (container.innerText || container.textContent || '').trim();
-    if (!raw) return false;
-
-    container.dataset[READY_FLAG] = 'true';
-
-    const originalHeading = container.previousElementSibling;
-    if (originalHeading && originalHeading.tagName.toLowerCase() === 'h6') {
-      originalHeading.style.display = 'none';
+  function reorderIfNeeded() {
+    var container = document.querySelector('.js-product-payments-container');
+    if (!container) return;
+    var discount = container.querySelector('.js-product-discount-container');
+    var link = container.querySelector('#btn-installments');
+    if (discount && link && discount.nextElementSibling !== link) {
+      container.insertBefore(discount, link);
     }
-
-    const lines = raw
-      .replace(/\r/g, '\n')
-      .split(/[\n;|]+/)
-      .map(sanitize)
-      .filter(Boolean);
-
-    const seen = new Set();
-    const unique = lines.filter(line => {
-      const key = line.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    const dimensions = [];
-    const details = [];
-    const observations = [];
-
-    unique.forEach(line => {
-      line = line.replace(/^(?:medidas?(?:\s+unit[aá]rias?)?)[\s:-]*/i, '').trim();
-      if (!line) return;
-
-      if (/^(obs|observa[çc][ãa]o|nota)[\s:]*$/i.test(line)) return;
-
-      const obsMatch = line.match(/^(?:obs|observa[çc][ãa]o|nota)[\s:]*(.+)/i);
-      if (obsMatch && obsMatch[1].trim().length > 0) {
-        observations.push(sanitize(obsMatch[1]));
-        return;
-      }
-
-      const match = line.match(/^([^:]+):\s*(.+)$/);
-      if (!match) {
-        observations.push(line);
-        return;
-      }
-
-      const label = sanitize(match[1]);
-      const value = sanitize(match[2]);
-      const isDim = /altura|largura|profundidade|comprimento|assento|di[aâ]metro|diametro|espessura|peso|tamanho/.test(label.toLowerCase());
-
-      if (isDim) {
-        dimensions.push({ label, value: addDefaultUnit(label, value) });
-      } else {
-        details.push({ label, value });
-      }
-    });
-
-    const dedup = (arr, keyFn) => {
-      const s = new Set();
-      return arr.filter(item => {
-        const k = keyFn(item);
-        if (s.has(k)) return false;
-        s.add(k);
-        return true;
-      });
-    };
-    const dims = dedup(dimensions, d => `${d.label}::${d.value}`);
-    const dets = dedup(details, d => `${d.label}::${d.value}`);
-    const obs = [...new Set(observations)];
-
-    let html = '<div class="acdc-product-description" role="region" aria-label="Descrição do produto">';
-
-    if (dets.length) {
-      html += '<div class="acdc-section"><h3>Descrição</h3>';
-      dets.forEach(item => {
-        html += `<div class="acdc-row"><span class="acdc-label">${escapeHtml(item.label)}</span><span class="acdc-value">${escapeHtml(item.value)}</span></div>`;
-      });
-      html += '</div>';
-    }
-
-    if (dims.length) {
-      html += '<div class="acdc-section"><h3>Dimensões</h3><div class="acdc-dimensions">';
-      dims.forEach((item, idx) => {
-        html += `<div class="acdc-dimension" style="transition-delay:${idx * 60}ms"><div class="acdc-dimension-label">${escapeHtml(item.label)}</div><div class="acdc-dimension-value">${escapeHtml(item.value)}</div></div>`;
-      });
-      html += '</div></div>';
-    }
-
-    if (obs.length) {
-      html += '<div class="acdc-notes">';
-      obs.forEach(text => html += `<p>${escapeHtml(text)}</p>`);
-      html += '</div>';
-    }
-
-    html += '</div>';
-    container.innerHTML = html;
-    animateCards();
-
-    console.log('[ACDC] Descrição montada com sucesso.');
-    return true;
-  }
-
-  /* ---------- INICIALIZAÇÃO ROBUSTA ---------- */
-  let observer = null;
-  let retryTimer = null;
-
-  function tryBuild() {
-    if (built) return;
-    const container = findContainer();
-    if (container) {
-      const success = buildDescription(container);
-      if (success) {
-        built = true;
-        if (observer) { observer.disconnect(); observer = null; }
-        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-      }
-    }
-  }
-
-  function scheduleRetries() {
-    const delays = [500, 1500, 3000];
-    delays.forEach(d => {
-      setTimeout(() => {
-        if (!built) tryBuild();
-      }, d);
-    });
-    const continuousRetry = () => {
-      if (built) return;
-      tryBuild();
-      retryTimer = setTimeout(continuousRetry, 2000);
-    };
-    retryTimer = setTimeout(continuousRetry, 4000);
   }
 
   function init() {
+    if (done) return;
     injectCSS();
-    tryBuild();
-
-    if (!built) {
-      scheduleRetries();
-      if (window.MutationObserver) {
-        observer = new MutationObserver(() => tryBuild());
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
-    }
+    reorderIfNeeded();
+    setTimeout(reorderIfNeeded, 300);
+    setTimeout(reorderIfNeeded, 800);
+    window.addEventListener('load', reorderIfNeeded);
+    done = true;
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  if (window.MutationObserver) {
+    var observer = new MutationObserver(function() {
+      if (document.querySelector('.js-product-payments-container')) {
+        injectCSS();
+        reorderIfNeeded();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 })();
