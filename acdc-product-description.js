@@ -1,13 +1,16 @@
+<script>
 (function() {
   "use strict";
 
-  var CSS_ID = 'acdc-description-style';
-  var READY_FLAG = 'acdcReady';
-  var built = false;
+  /* ---------- CONFIGURAÇÕES ---------- */
+  const CSS_ID = 'acdc-description-style';
+  const READY_FLAG = 'acdcReady';
+  let built = false;
 
+  /* ---------- INJEÇÃO DE CSS (APARÊNCIA MELHORADA) ---------- */
   function injectCSS() {
     if (document.getElementById(CSS_ID)) return;
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.id = CSS_ID;
     style.innerHTML = `
       :root{
@@ -50,6 +53,7 @@
         letter-spacing:0.2px;
       }
 
+      /* Detalhes (título + valor) em linha, com separação visual */
       .acdc-row{
         display:flex;
         flex-wrap:wrap;
@@ -79,6 +83,7 @@
         word-break:break-word;
       }
 
+      /* Dimensões – grid mais compacto e com mais colunas */
       .acdc-dimensions{
         display:grid;
         grid-template-columns:repeat(3,1fr);
@@ -126,6 +131,7 @@
         line-height:1.2;
       }
 
+      /* Observações compactas e elegantes */
       .acdc-notes{
         margin-top: 18px;
         padding: 10px 16px;
@@ -155,6 +161,7 @@
         border-radius:6px;
       }
 
+      /* Responsivo */
       @media(max-width:900px){
         .acdc-dimensions{
           grid-template-columns:repeat(2,1fr);
@@ -182,11 +189,11 @@
     document.head.appendChild(style);
   }
 
-  var sanitize = function(s) { return String(s || '').trim().replace(/\s+/g, ' '); };
-  var escapeHtml = function(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  /* ---------- UTILITÁRIOS ---------- */
+  const sanitize = s => String(s || '').trim().replace(/\s+/g, ' ');
+  const escapeHtml = str =>
+    String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  };
 
   function addDefaultUnit(label, value) {
     if (/[a-zA-Z]/.test(value)) return value;
@@ -199,122 +206,106 @@
            document.querySelector('.user-content.font-small.mb-4');
   }
 
+  /* ---------- ANIMAÇÃO ---------- */
   function animateCards() {
-    var cards = document.querySelectorAll('.acdc-dimension');
-    for (var i = 0; i < cards.length; i++) {
-      cards[i].classList.add('visible');
-    }
+    document.querySelectorAll('.acdc-dimension').forEach(card => card.classList.add('visible'));
   }
 
+  /* ---------- CONSTRUÇÃO DO HTML ---------- */
   function buildDescription(container) {
     if (container.dataset[READY_FLAG] === 'true') return false;
 
-    var raw = (container.innerText || container.textContent || '').trim();
+    const raw = (container.innerText || container.textContent || '').trim();
     if (!raw) return false;
 
     container.dataset[READY_FLAG] = 'true';
 
-    var originalHeading = container.previousElementSibling;
+    const originalHeading = container.previousElementSibling;
     if (originalHeading && originalHeading.tagName.toLowerCase() === 'h6') {
       originalHeading.style.display = 'none';
     }
 
-    var lines = raw
+    const lines = raw
       .replace(/\r/g, '\n')
       .split(/[\n;|]+/)
       .map(sanitize)
       .filter(Boolean);
 
-    var seen = new Set();
-    var unique = [];
-    for (var i = 0; i < lines.length; i++) {
-      var key = lines[i].toLowerCase();
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(lines[i]);
-      }
-    }
+    const seen = new Set();
+    const unique = lines.filter(line => {
+      const key = line.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
-    var dimensions = [];
-    var details = [];
-    var observations = [];
+    const dimensions = [];
+    const details = [];
+    const observations = [];
 
-    for (var j = 0; j < unique.length; j++) {
-      var line = unique[j];
+    unique.forEach(line => {
       line = line.replace(/^(?:medidas?(?:\s+unit[aá]rias?)?)[\s:-]*/i, '').trim();
-      if (!line) continue;
+      if (!line) return;
 
-      if (/^(obs|observa[çc][ãa]o|nota)[\s:]*$/i.test(line)) continue;
+      if (/^(obs|observa[çc][ãa]o|nota)[\s:]*$/i.test(line)) return;
 
-      var obsMatch = line.match(/^(?:obs|observa[çc][ãa]o|nota)[\s:]*(.+)/i);
+      const obsMatch = line.match(/^(?:obs|observa[çc][ãa]o|nota)[\s:]*(.+)/i);
       if (obsMatch && obsMatch[1].trim().length > 0) {
         observations.push(sanitize(obsMatch[1]));
-        continue;
+        return;
       }
 
-      var match = line.match(/^([^:]+):\s*(.+)$/);
+      const match = line.match(/^([^:]+):\s*(.+)$/);
       if (!match) {
         observations.push(line);
-        continue;
+        return;
       }
 
-      var label = sanitize(match[1]);
-      var value = sanitize(match[2]);
-      var isDim = /altura|largura|profundidade|comprimento|assento|di[aâ]metro|diametro|espessura|peso|tamanho/.test(label.toLowerCase());
+      const label = sanitize(match[1]);
+      const value = sanitize(match[2]);
+      const isDim = /altura|largura|profundidade|comprimento|assento|di[aâ]metro|diametro|espessura|peso|tamanho/.test(label.toLowerCase());
 
       if (isDim) {
-        dimensions.push({ label: label, value: addDefaultUnit(label, value) });
+        dimensions.push({ label, value: addDefaultUnit(label, value) });
       } else {
-        details.push({ label: label, value: value });
+        details.push({ label, value });
       }
-    }
+    });
 
-    function dedup(arr, keyFn) {
-      var s = new Set();
-      var result = [];
-      for (var k = 0; k < arr.length; k++) {
-        var kk = keyFn(arr[k]);
-        if (!s.has(kk)) {
-          s.add(kk);
-          result.push(arr[k]);
-        }
-      }
-      return result;
-    }
-    var dims = dedup(dimensions, function(d) { return d.label + '::' + d.value; });
-    var dets = dedup(details, function(d) { return d.label + '::' + d.value; });
-    var obs = [];
-    var obsSet = new Set();
-    for (var l = 0; l < observations.length; l++) {
-      if (!obsSet.has(observations[l])) {
-        obsSet.add(observations[l]);
-        obs.push(observations[l]);
-      }
-    }
+    const dedup = (arr, keyFn) => {
+      const s = new Set();
+      return arr.filter(item => {
+        const k = keyFn(item);
+        if (s.has(k)) return false;
+        s.add(k);
+        return true;
+      });
+    };
+    const dims = dedup(dimensions, d => `${d.label}::${d.value}`);
+    const dets = dedup(details, d => `${d.label}::${d.value}`);
+    const obs = [...new Set(observations)];
 
-    var html = '<div class="acdc-product-description" role="region" aria-label="Descrição do produto">';
+    let html = '<div class="acdc-product-description" role="region" aria-label="Descrição do produto">';
 
     if (dets.length) {
       html += '<div class="acdc-section"><h3>Descrição</h3>';
-      for (var m = 0; m < dets.length; m++) {
-        html += '<div class="acdc-row"><span class="acdc-label">' + escapeHtml(dets[m].label) + '</span><span class="acdc-value">' + escapeHtml(dets[m].value) + '</span></div>';
-      }
+      dets.forEach(item => {
+        html += `<div class="acdc-row"><span class="acdc-label">${escapeHtml(item.label)}</span><span class="acdc-value">${escapeHtml(item.value)}</span></div>`;
+      });
       html += '</div>';
     }
 
     if (dims.length) {
       html += '<div class="acdc-section"><h3>Dimensões</h3><div class="acdc-dimensions">';
-      for (var n = 0; n < dims.length; n++) {
-        html += '<div class="acdc-dimension" style="transition-delay:' + (n * 60) + 'ms"><div class="acdc-dimension-label">' + escapeHtml(dims[n].label) + '</div><div class="acdc-dimension-value">' + escapeHtml(dims[n].value) + '</div></div>';
-      }
+      dims.forEach((item, idx) => {
+        html += `<div class="acdc-dimension" style="transition-delay:${idx * 60}ms"><div class="acdc-dimension-label">${escapeHtml(item.label)}</div><div class="acdc-dimension-value">${escapeHtml(item.value)}</div></div>`;
+      });
       html += '</div></div>';
     }
 
     if (obs.length) {
       html += '<div class="acdc-notes">';
-      for (var p = 0; p < obs.length; p++) {
-        html += '<p>' + escapeHtml(obs[p]) + '</p>';
-      }
+      obs.forEach(text => html += `<p>${escapeHtml(text)}</p>`);
       html += '</div>';
     }
 
@@ -326,14 +317,15 @@
     return true;
   }
 
-  var observer = null;
-  var retryTimer = null;
+  /* ---------- INICIALIZAÇÃO ROBUSTA ---------- */
+  let observer = null;
+  let retryTimer = null;
 
   function tryBuild() {
     if (built) return;
-    var container = findContainer();
+    const container = findContainer();
     if (container) {
-      var success = buildDescription(container);
+      const success = buildDescription(container);
       if (success) {
         built = true;
         if (observer) { observer.disconnect(); observer = null; }
@@ -343,13 +335,13 @@
   }
 
   function scheduleRetries() {
-    var delays = [500, 1500, 3000];
-    for (var d = 0; d < delays.length; d++) {
-      setTimeout(function() {
+    const delays = [500, 1500, 3000];
+    delays.forEach(d => {
+      setTimeout(() => {
         if (!built) tryBuild();
-      }, delays[d]);
-    }
-    var continuousRetry = function() {
+      }, d);
+    });
+    const continuousRetry = () => {
       if (built) return;
       tryBuild();
       retryTimer = setTimeout(continuousRetry, 2000);
@@ -360,10 +352,11 @@
   function init() {
     injectCSS();
     tryBuild();
+
     if (!built) {
       scheduleRetries();
       if (window.MutationObserver) {
-        observer = new MutationObserver(function() { tryBuild(); });
+        observer = new MutationObserver(() => tryBuild());
         observer.observe(document.body, { childList: true, subtree: true });
       }
     }
@@ -375,3 +368,4 @@
     init();
   }
 })();
+</script>
