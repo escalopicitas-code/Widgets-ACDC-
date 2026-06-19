@@ -8,7 +8,7 @@
   var built  = false;
 
   /* ════════════════════════════════════════════════════════════
-     CSS
+     CSS (Estilização dos Cards e Tabelas)
   ════════════════════════════════════════════════════════════ */
   function injectCSS() {
     if (document.getElementById(CSS_ID)) return;
@@ -45,7 +45,7 @@
         color:#666666; word-break:break-word;
       }
 
-      /* grade de dimensões: gap de 1px via background no wrapper */
+      /* grade de dimensões */
       .acdc-dimensions { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#ebebeb; }
       .acdc-dimension {
         background:#ffffff; padding:16px 12px;
@@ -73,11 +73,6 @@
       }
       .acdc-notes p:last-child { margin-bottom:0; }
 
-      .acdc-product-description img {
-        max-width:100%; height:auto; display:block;
-        margin:0 auto 12px; object-fit:contain; border-radius:0;
-      }
-
       @media(max-width:900px){ .acdc-dimensions{grid-template-columns:repeat(2,1fr);} }
       @media(max-width:480px){
         .acdc-dimensions{grid-template-columns:1fr;}
@@ -91,81 +86,21 @@
   /* ════════════════════════════════════════════════════════════
      UTILS
   ════════════════════════════════════════════════════════════ */
-  function sanitize(s) { return String(s || '').trim().replace(/\s+/g, ' '); }
-
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  function dedup(arr, keyFn) {
-    var seen = new Set(), out = [];
-    arr.forEach(function(x){ var k=keyFn(x); if(!seen.has(k)){seen.add(k);out.push(x);} });
-    return out;
-  }
-
   var DIM_WORDS = /altura|largura|profundidade|comprimento|assento|di[aâ]metro|espessura|peso|tamanho/i;
-  var OBS_WORDS = /^(?:obs|observa[çc][ãa]o|nota)$/i;
-  var MEDIDAS_STRIP = /^medidas?\s*(?:unit[aá]rias?)?\s*[:–\-]*/i;
-  var LABEL_RE = /([A-ZÁÉÍÓÚÀÃÕÇ][A-ZÁÉÍÓÚÀÃÕÇa-záéíóúàãõç\-]*(?:\s+[A-ZÁÉÍÓÚÀÃÕÇa-záéíóúàãõç\-]+){0,2})\s*:/g;
-
-  function tokenize(text) {
-    var hits = [], m;
-    LABEL_RE.lastIndex = 0;
-
-    while ((m = LABEL_RE.exec(text)) !== null) {
-      var label = sanitize(m[1]);
-      if (label.length < 2) continue;
-      var charBefore = m.index > 0 ? text[m.index - 1] : '';
-      if (/[@\/\\]/.test(charBefore)) continue;
-      var charAfter = text[m.index + m[0].length] || '';
-      if (label.length <= 2 && /\d/.test(charAfter)) continue; 
-      hits.push({ label: label, valueStart: m.index + m[0].length, labelStart: m.index });
-    }
-    return hits;
-  }
-
-  var UNIT_RE = /^(\d+(?:[,\.]\d+)?(?:\s*(?:cm|mm|m[²2]?|kg|g(?!rafia)|ml|l|"|pol(?:egadas?)?))?)\b/i;
-
-  function extractMeasurement(value) {
-    var m = value.match(UNIT_RE);
-    if (!m || !m[1]) return null;
-    var meas = m[1].trim();
-    var rest = value.slice(m[1].length).replace(/^[\s,;.]+/, '').trim();
-    return { meas: meas, rest: rest };
-  }
+  var OBS_WORDS = /^(?:obs|observa[çc][ãa]o|nota|aten[çc][ãa]o|importante)$/i;
 
   function addDefaultUnit(label, value) {
-    if (/[a-zA-ZÀ-ö]/.test(value)) return value;
-    if (/peso/i.test(label)) return value + ' kg';
-    return value + ' cm';
-  }
-
-  var CONNECTORS = new Set([
-    'e','de','da','do','das','dos','em','com','por','para','ou',
-    'a','o','um','uma','no','na','ao','à','as','os','se','que',
-    'mais','menos','muito','pouco','bem','mal','já','ainda'
-  ]);
-
-  function splitValueNote(value) {
-    if (value.length < 25) return { value: value, note: '' };
-    var words = value.split(/\s+/);
-    if (words.length <= 3) return { value: value, note: '' };
-
-    for (var i = 2; i < words.length; i++) {
-      var w = words[i];
-      if (/^[A-ZÁÉÍÓÚÀÃÕÇ][a-záéíóúàãõç]/.test(w)) {
-        var prev = words[i - 1].replace(/[,;.!?]+$/, '').toLowerCase();
-        if (!CONNECTORS.has(prev)) {
-          return {
-            value: words.slice(0, i).join(' ').replace(/[,;.]+$/, '').trim(),
-            note:  words.slice(i).join(' ').trim()
-          };
-        }
-      }
-    }
-    return { value: value, note: '' };
+    var cleanVal = value.replace(/(cm|ml|m|kg)\s*$/i, '').trim();
+    if (/[a-zA-ZÀ-ö]/.test(cleanVal) && !/(cm|ml|m|kg)$/i.test(value)) return value;
+    if (/peso/i.test(label)) return cleanVal + ' kg';
+    if (/comprimento/i.test(label) && /ml/i.test(value)) return cleanVal + ' ml'; // mantem o padrão bizarro se houver
+    return cleanVal + ' cm';
   }
 
   function findContainer() {
@@ -178,84 +113,106 @@
   }
 
   /* ════════════════════════════════════════════════════════════
-     PARSER PRINCIPAL (ATUALIZADO)
+     PROCESSADOR ULTRA RESILIENTE
   ════════════════════════════════════════════════════════════ */
   function buildDescription(container) {
     if (container.dataset.acdcReady === 'true') return false;
 
-    var raw = sanitize(container.innerText || container.textContent || '');
-    if (!raw) return false;
+    var rawText = container.innerText || container.textContent || '';
+    if (!rawText.trim()) return false;
     container.dataset.acdcReady = 'true';
 
     var prev = container.previousElementSibling;
     if (prev && prev.tagName.toLowerCase() === 'h6') prev.style.display = 'none';
 
-    var descGeral = "";
-    var specs = raw; 
-
-    // Procura pela palavra "Medidas" e divide o texto ali
-    var matchMedidas = raw.match(/\b(medidas?(?:\s+unit[aá]rias?)?)\b\s*[:\-]?/i);
-
-    if (matchMedidas) {
-      descGeral = raw.substring(0, matchMedidas.index).trim();
-      descGeral = descGeral.replace(/^Descri[çc][ãa]o\s*/i, '').trim();
-      specs = raw.substring(matchMedidas.index).trim();
-    }
-
-    var positions = tokenize(specs);
-
-    var dimensions   = [];
-    var details      = [];
+    var lines = rawText.split(/\r?\n/);
+    
+    var descGeralHtml = "";
+    var details = [];
+    var dimensions = [];
     var observations = [];
 
-    for (var i = 0; i < positions.length; i++) {
-      var label = positions[i].label;
-      var valueEnd = i + 1 < positions.length ? positions[i + 1].labelStart : specs.length;
-      
-      var value = specs.slice(positions[i].valueStart, valueEnd)
-                       .replace(/[\s,;.|]+$/, '').trim();
-      value = value.replace(/^[\s|]+/, ''); 
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+      if (!trimmed) return;
 
-      label = label.replace(MEDIDAS_STRIP, '').trim();
-      if (!label || value === '') continue;
+      // Remove falsos títulos redundantes
+      if (/^(descri[çc][ãa]o|medidas?|dimen\s*s[õo]es)[:\-]?$/i.test(trimmed)) return;
 
-      if (OBS_WORDS.test(label)) { observations.push(value); continue; }
-
-      var isDim = DIM_WORDS.test(label);
-
-      if (isDim) {
-        var meas = extractMeasurement(value);
-        if (meas) {
-          if (meas.rest) observations.push(meas.rest);
-          dimensions.push({ label: label, value: addDefaultUnit(label, meas.meas) });
-        } else {
-          dimensions.push({ label: label, value: addDefaultUnit(label, value) });
-        }
-      } else {
-        var sv = splitValueNote(value);
-        if (sv.value) details.push({ label: label, value: sv.value });
-        if (sv.note)  observations.push(sv.note);
+      // Caso A: Linha com Pipes "|" (Múltiplas dimensões separadas por barras)
+      if (trimmed.includes('|') && DIM_WORDS.test(trimmed)) {
+        var parts = trimmed.split('|');
+        parts.forEach(function(part) {
+          var subMatch = part.trim().match(/^([^:]+):\s*(.*)$/);
+          if (subMatch) {
+            var dLabel = subMatch[1].trim();
+            var dVal = subMatch[2].trim();
+            dimensions.push({ label: dLabel, value: addDefaultUnit(dLabel, dVal) });
+          }
+        });
+        return;
       }
-    }
 
-    var dims = dedup(dimensions,   function(d){ return d.label + '||' + d.value; });
-    var dets = dedup(details,      function(d){ return d.label + '||' + d.value; });
-    var obs  = dedup(observations, function(s){ return s.toLowerCase().slice(0, 60); });
+      // Procura separadores flexíveis (tanto ":" quanto um espaço largo após palavras conhecidas)
+      var matchLabel = trimmed.match(/^([^:]+):\s*(.*)$/);
+      
+      // Se não tem dois-pontos mas começa com uma palavra-chave conhecida seguida de texto
+      if (!matchLabel) {
+        var tokensConhecidos = /^(material|composi[çc][ãa]o|acabamento|cor|altura|largura|comprimento|profundidade|obs|nota)\b/i;
+        if (tokensConhecidos.test(trimmed)) {
+          var firstSpace = trimmed.indexOf(' ');
+          if (firstSpace > 0) {
+            matchLabel = [
+              trimmed,
+              trimmed.substring(0, firstSpace),
+              trimmed.substring(firstSpace + 1)
+            ];
+          }
+        }
+      }
 
-    obs = obs.filter(function(o){ return o.length > 4 && o !== '|'; });
+      if (matchLabel) {
+        var label = matchLabel[1].trim().replace(/[:\-]+/g, '');
+        var value = matchLabel[2].trim();
 
+        if (OBS_WORDS.test(label)) {
+          if (value) observations.push(value);
+          return;
+        }
+
+        if (DIM_WORDS.test(label)) {
+          dimensions.push({ label: label, value: addDefaultUnit(label, value) });
+          return;
+        }
+
+        if (value.length > 50 || /^(material|composi[çc][ãa]o|acabamento)$/i.test(label)) {
+          descGeralHtml += '<p style="font-size:13.5px; color:#666; margin-bottom:12px; line-height:1.6;">'
+                        + '<strong>' + escapeHtml(label) + ':</strong> ' + escapeHtml(value) 
+                        + '</p>';
+          return;
+        }
+
+        details.push({ label: label, value: value });
+
+      } else {
+        // Se for aviso longo joga para observações, senão vira descrição geral
+        if (/calcular|margem|sobra|estoque|responsabilizamos/i.test(trimmed) || trimmed.length > 60) {
+          observations.push(trimmed);
+        } else {
+          descGeralHtml += '<p style="font-size:13.5px; color:#666; margin-bottom:12px; line-height:1.6;">' 
+                        + escapeHtml(trimmed) 
+                        + '</p>';
+        }
+      }
+    });
+
+    /* ── MONTAGEM VISUAL FINAL ── */
     var html = '<div class="acdc-product-description" role="region" aria-label="Descrição do produto">';
 
-    if (descGeral || dets.length) {
+    if (descGeralHtml || details.length) {
       html += '<div class="acdc-section"><h3>Descrição</h3>';
-      
-      if (descGeral) {
-        // Formata os dois-pontos (ex: "Material:") para ficarem em negrito e quebra a linha
-        var formatado = escapeHtml(descGeral).replace(/([A-ZÁÉÍÓÚÀÃÕÇ][a-záéíóúàãõç]+)\s*:/g, '<br><strong>$1:</strong>').replace(/^<br>/, '');
-        html += '<p style="font-size:13.5px; color:#666; margin-bottom:16px; line-height:1.6;">' + formatado + '</p>';
-      }
-
-      dets.forEach(function(d){
+      if (descGeralHtml) html += descGeralHtml;
+      details.forEach(function(d) {
         html += '<div class="acdc-row">'
              +  '<span class="acdc-label">'  + escapeHtml(d.label) + '</span>'
              +  '<span class="acdc-value">'  + escapeHtml(d.value) + '</span>'
@@ -264,9 +221,9 @@
       html += '</div>';
     }
 
-    if (dims.length) {
+    if (dimensions.length) {
       html += '<div class="acdc-section"><h3>Dimensões</h3><div class="acdc-dimensions">';
-      dims.forEach(function(d, i){
+      dimensions.forEach(function(d, i) {
         html += '<div class="acdc-dimension" style="transition-delay:' + (i * 55) + 'ms">'
              +  '<div class="acdc-dimension-label">' + escapeHtml(d.label) + '</div>'
              +  '<div class="acdc-dimension-value">' + escapeHtml(d.value) + '</div>'
@@ -275,9 +232,9 @@
       html += '</div></div>';
     }
 
-    if (obs.length) {
+    if (observations.length) {
       html += '<div class="acdc-notes">';
-      obs.forEach(function(o){ html += '<p>' + escapeHtml(o) + '</p>'; });
+      observations.forEach(function(o) { html += '<p>' + escapeHtml(o) + '</p>'; });
       html += '</div>';
     }
 
@@ -316,7 +273,7 @@
   }
 
   function init() {
-    window.__acdcDescriptionInit = false; // Reset de segurança
+    window.__acdcDescriptionInit = false; 
     injectCSS();
     tryBuild();
     if (!built) {
