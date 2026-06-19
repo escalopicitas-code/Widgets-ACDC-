@@ -8,7 +8,7 @@
   var built  = false;
 
   /* ════════════════════════════════════════════════════════════
-     CSS (Estilização dos Cards e Tabelas)
+     CSS PREMIUM REESTILIZADO
   ════════════════════════════════════════════════════════════ */
   function injectCSS() {
     if (document.getElementById(CSS_ID)) return;
@@ -19,65 +19,72 @@
 
       .acdc-product-description {
         width:100%; font-family:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
-        color:#1a1a1a; background:transparent; line-height:1.6;
+        color:#1a1a1a; background:transparent; line-height:1.6; padding: 10px 0;
       }
 
-      /* seção */
-      .acdc-section { padding:20px 0; border-top:1px solid #ebebeb; }
+      /* seções */
+      .acdc-section { padding:24px 0; border-top:1px solid #f0f0f0; }
       .acdc-section:first-child { border-top:0; padding-top:0; }
       .acdc-section h3 {
-        margin:0 0 16px; font-size:10px; font-weight:600;
-        letter-spacing:.18em; text-transform:uppercase; color:#aaaaaa;
+        margin:0 0 20px; font-size:11px; font-weight:600;
+        letter-spacing:.2em; text-transform:uppercase; color:#999999;
       }
 
       /* linhas de detalhe */
       .acdc-row {
         display:flex; flex-wrap:wrap; align-items:baseline;
-        gap:4px 10px; padding:8px 0; border-bottom:1px solid #f2f2f2;
+        gap:6px 16px; padding:10px 0; border-bottom:1px solid #f7f7f7;
       }
       .acdc-row:last-child { border-bottom:0; padding-bottom:0; }
       .acdc-label {
-        font-size:10px; font-weight:600; letter-spacing:.12em;
-        text-transform:uppercase; color:#1a1a1a; white-space:nowrap; min-width:90px;
+        font-size:11px; font-weight:600; letter-spacing:.12em;
+        text-transform:uppercase; color:#222222; white-space:nowrap; min-width:110px;
       }
       .acdc-value {
-        font-size:13.5px; font-weight:400; letter-spacing:.01em;
-        color:#666666; word-break:break-word;
+        font-size:14px; font-weight:400; letter-spacing:.01em;
+        color:#555555; word-break:break-word;
       }
 
-      /* grade de dimensões */
-      .acdc-dimensions { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#ebebeb; }
+      /* grade de dimensões inteligente e fluida */
+      .acdc-dimensions { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+        gap: 12px; 
+      }
       .acdc-dimension {
-        background:#ffffff; padding:16px 12px;
+        background:#ffffff; padding:20px 16px;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         display:flex; flex-direction:column; align-items:center;
         justify-content:center; text-align:center;
         opacity:0; transform:translateY(8px);
-        transition:opacity .4s ease,transform .4s ease;
+        transition: opacity .4s ease, transform .4s ease, border-color .3s ease, box-shadow .3s ease;
       }
       .acdc-dimension.visible { opacity:1; transform:translateY(0); }
-      .acdc-dimension:hover   { background:#fafafa; }
+      .acdc-dimension:hover   { border-color: #cccccc; box-shadow: 0 4px 8px rgba(0,0,0,0.04); }
+      
       .acdc-dimension-label {
-        font-size:9.5px; font-weight:600; letter-spacing:.12em;
-        text-transform:uppercase; color:#aaaaaa; margin-bottom:6px;
+        font-size:10px; font-weight:600; letter-spacing:.14em;
+        text-transform:uppercase; color:#999999; margin-bottom:8px;
       }
       .acdc-dimension-value {
-        font-size:clamp(17px,2vw,22px); font-weight:300;
-        letter-spacing:-.01em; color:#1a1a1a; line-height:1.2;
+        font-size:clamp(18px, 2.2vw, 24px); font-weight:300;
+        letter-spacing:-.01em; color:#1a1a1a; line-height:1.1;
       }
 
-      /* notas */
-      .acdc-notes { margin-top:20px; padding-top:16px; border-top:1px solid #ebebeb; }
+      /* notas e avisos de rodapé */
+      .acdc-notes { margin-top:24px; padding:16px 20px; background: #fafafa; border-radius: 6px; border-left: 3px solid #dddddd; }
       .acdc-notes p {
-        margin:0 0 6px; font-size:12.5px; font-weight:400;
-        letter-spacing:.02em; color:#888888; line-height:1.6;
+        margin:0 0 8px; font-size:13px; font-weight:400;
+        letter-spacing:.01em; color:#777777; line-height:1.6;
       }
       .acdc-notes p:last-child { margin-bottom:0; }
 
-      @media(max-width:900px){ .acdc-dimensions{grid-template-columns:repeat(2,1fr);} }
       @media(max-width:480px){
-        .acdc-dimensions{grid-template-columns:1fr;}
-        .acdc-row{flex-direction:column;gap:2px;}
+        .acdc-row{flex-direction:column;gap:4px;}
         .acdc-label{min-width:auto;}
+        .acdc-dimensions { grid-template-columns: 1fr; }
       }
     `;
     document.head.appendChild(s);
@@ -138,28 +145,24 @@
 
       if (/^(descri[çc][ãa]o|medidas?|dimen\s*s[õo]es)[:\-]?$/i.test(trimmed)) return;
 
-      // ── TRATAMENTO EXCLUSIVO PARA PAPEL DE PAREDE (Caça termos soltos na linha) ──
+      // ── TRATAMENTO EXCLUSIVO PARA PAPEL DE PAREDE ──
       if (/(\d+)\s*(?:ml|metros\s+lineares)/i.test(trimmed) || /cobre\s+aproximadamente/i.test(trimmed)) {
         
-        // Pega a largura se estiver solta na linha (ex: Largura: 53 cm)
         var largMatch = trimmed.match(/largura\s*:\s*(\d+)\s*cm/i);
         if (largMatch) {
           dimensions.push({ label: 'Largura', value: largMatch[1] + ' cm' });
         }
 
-        // Pega o comprimento em metros lineares (ex: 10ml)
         var compMatch = trimmed.match(/(\d+)\s*ml/i);
         if (compMatch) {
           dimensions.push({ label: 'Comprimento', value: compMatch[1] + 'ml' });
         }
 
-        // Pega a área de cobertura (ex: cobre aproximadamente 5m²)
         var cobMatch = trimmed.match(/(cobre\s+aproximadamente\s*\d+\s*m²|\d+\s*m²)/i);
         if (cobMatch) {
           observations.push(cobMatch[1].trim());
         }
 
-        // Se sobrou algum aviso na mesma linha, manda pras observações
         var restoAviso = trimmed.replace(/largura\s*:\s*(\d+)\s*cm/i, '')
                                 .replace(/(\d+)\s*ml/i, '')
                                 .replace(/cobre\s+aproximadamente\s*\d+\s*m²/i, '')
@@ -211,7 +214,7 @@
         }
 
         if (value.length > 50 || /^(material|composi[çc][ãa]o|acabamento)$/i.test(label)) {
-          descGeralHtml += '<p style="font-size:13.5px; color:#666; margin-bottom:12px; line-height:1.6;">'
+          descGeralHtml += '<p style="font-size:14px; color:#555; margin-bottom:12px; line-height:1.6;">'
                         + '<strong>' + escapeHtml(label) + ':</strong> ' + escapeHtml(value) 
                         + '</p>';
           return;
@@ -223,7 +226,7 @@
         if (/calcular|margem|sobra|estoque|responsabilizamos/i.test(trimmed) || trimmed.length > 60) {
           observations.push(trimmed);
         } else {
-          descGeralHtml += '<p style="font-size:13.5px; color:#666; margin-bottom:12px; line-height:1.6;">' 
+          descGeralHtml += '<p style="font-size:14px; color:#555; margin-bottom:12px; line-height:1.6;">' 
                         + escapeHtml(trimmed) 
                         + '</p>';
         }
