@@ -96,10 +96,10 @@
   var OBS_WORDS = /^(?:obs|observa[çc][ãa]o|nota|aten[çc][ãa]o|importante)$/i;
 
   function addDefaultUnit(label, value) {
-    var cleanVal = value.replace(/(cm|ml|m|kg)\s*$/i, '').trim();
-    if (/[a-zA-ZÀ-ö]/.test(cleanVal) && !/(cm|ml|m|kg)$/i.test(value)) return value;
+    var cleanVal = value.replace(/(cm|ml|m|kg|m²)\s*$/i, '').trim();
+    if (/[a-zA-ZÀ-ö]/.test(cleanVal) && !/(cm|ml|m|kg|m²)$/i.test(value)) return value;
     if (/peso/i.test(label)) return cleanVal + ' kg';
-    if (/comprimento/i.test(label) && /ml/i.test(value)) return cleanVal + ' ml'; // mantem o padrão bizarro se houver
+    if (/comprimento/i.test(label) && /ml/i.test(value)) return cleanVal + 'ml';
     return cleanVal + ' cm';
   }
 
@@ -113,7 +113,7 @@
   }
 
   /* ════════════════════════════════════════════════════════════
-     PROCESSADOR ULTRA RESILIENTE
+     PROCESSADOR ADAPTATIVO
   ════════════════════════════════════════════════════════════ */
   function buildDescription(container) {
     if (container.dataset.acdcReady === 'true') return false;
@@ -136,10 +136,41 @@
       var trimmed = line.trim();
       if (!trimmed) return;
 
-      // Remove falsos títulos redundantes
       if (/^(descri[çc][ãa]o|medidas?|dimen\s*s[õo]es)[:\-]?$/i.test(trimmed)) return;
 
-      // Caso A: Linha com Pipes "|" (Múltiplas dimensões separadas por barras)
+      // ── TRATAMENTO EXCLUSIVO PARA PAPEL DE PAREDE (Caça termos soltos na linha) ──
+      if (/(\d+)\s*(?:ml|metros\s+lineares)/i.test(trimmed) || /cobre\s+aproximadamente/i.test(trimmed)) {
+        
+        // Pega a largura se estiver solta na linha (ex: Largura: 53 cm)
+        var largMatch = trimmed.match(/largura\s*:\s*(\d+)\s*cm/i);
+        if (largMatch) {
+          dimensions.push({ label: 'Largura', value: largMatch[1] + ' cm' });
+        }
+
+        // Pega o comprimento em metros lineares (ex: 10ml)
+        var compMatch = trimmed.match(/(\d+)\s*ml/i);
+        if (compMatch) {
+          dimensions.push({ label: 'Comprimento', value: compMatch[1] + 'ml' });
+        }
+
+        // Pega a área de cobertura (ex: cobre aproximadamente 5m²)
+        var cobMatch = trimmed.match(/(cobre\s+aproximadamente\s*\d+\s*m²|\d+\s*m²)/i);
+        if (cobMatch) {
+          observations.push(cobMatch[1].trim());
+        }
+
+        // Se sobrou algum aviso na mesma linha, manda pras observações
+        var restoAviso = trimmed.replace(/largura\s*:\s*(\d+)\s*cm/i, '')
+                                .replace(/(\d+)\s*ml/i, '')
+                                .replace(/cobre\s+aproximadamente\s*\d+\s*m²/i, '')
+                                .replace(/[,;\s|]+$/, '').trim();
+        if (restoAviso.length > 10) {
+          observations.push(restoAviso);
+        }
+        return; 
+      }
+
+      // ── FLUXO PADRÃO DO RESTO DO SITE ──
       if (trimmed.includes('|') && DIM_WORDS.test(trimmed)) {
         var parts = trimmed.split('|');
         parts.forEach(function(part) {
@@ -153,20 +184,14 @@
         return;
       }
 
-      // Procura separadores flexíveis (tanto ":" quanto um espaço largo após palavras conhecidas)
       var matchLabel = trimmed.match(/^([^:]+):\s*(.*)$/);
       
-      // Se não tem dois-pontos mas começa com uma palavra-chave conhecida seguida de texto
       if (!matchLabel) {
         var tokensConhecidos = /^(material|composi[çc][ãa]o|acabamento|cor|altura|largura|comprimento|profundidade|obs|nota)\b/i;
         if (tokensConhecidos.test(trimmed)) {
           var firstSpace = trimmed.indexOf(' ');
           if (firstSpace > 0) {
-            matchLabel = [
-              trimmed,
-              trimmed.substring(0, firstSpace),
-              trimmed.substring(firstSpace + 1)
-            ];
+            matchLabel = [trimmed, trimmed.substring(0, firstSpace), trimmed.substring(firstSpace + 1)];
           }
         }
       }
@@ -195,7 +220,6 @@
         details.push({ label: label, value: value });
 
       } else {
-        // Se for aviso longo joga para observações, senão vira descrição geral
         if (/calcular|margem|sobra|estoque|responsabilizamos/i.test(trimmed) || trimmed.length > 60) {
           observations.push(trimmed);
         } else {
@@ -206,7 +230,7 @@
       }
     });
 
-    /* ── MONTAGEM VISUAL FINAL ── */
+    /* ── RECONSTRUÇÃO DO HTML ── */
     var html = '<div class="acdc-product-description" role="region" aria-label="Descrição do produto">';
 
     if (descGeralHtml || details.length) {
