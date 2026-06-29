@@ -1,205 +1,349 @@
-(function() {
+(function () {
   if (window.__wallpaperCalcInit) return;
   window.__wallpaperCalcInit = true;
 
   const d = document;
   const url = window.location.href.toLowerCase();
   const WHATSAPP_NUM = "5541991668814";
-  const ROLL_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="12" rx="2"></rect><path d="M17 9a4 4 0 0 1 4 4v5"></path></svg>';
   const MAX_ICONS = 12;
 
-  if (!(url.includes('papeis-de-parede') || url.includes('papel-de-parede') || url.includes('wallpaper'))) return;
+  // ─── Detecção de modo ───────────────────────────────────────────────
+  const isPainel =
+    url.includes('painel') ||
+    (function () {
+      const el = d.querySelector('[data-store^="product-item-name"], .js-item-name, .product-title, .js-product-name, h1');
+      return el ? /painel/i.test(el.textContent) : false;
+    })();
 
-  // Injeta CSS
+  const isWallpaper =
+    url.includes('papeis-de-parede') ||
+    url.includes('papel-de-parede') ||
+    url.includes('wallpaper') ||
+    isPainel;
+
+  if (!isWallpaper) return;
+
+  // ─── Ícones SVG ─────────────────────────────────────────────────────
+  const ICON_ROLL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M17 9a4 4 0 0 1 4 4v5"/></svg>`;
+  const ICON_PANEL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="18" rx="1.5"/><rect x="13" y="3" width="8" height="18" rx="1.5"/></svg>`;
+  const ICON_CALC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="6" rx="2"/><path d="M9 10v4a3 3 0 0 0 3 3h0"/><rect x="11" y="17" width="5" height="4" rx="1"/></svg>`;
+  const ICON_CHEVRON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>`;
+  const ICON_WHATS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.4-4.2A8 8 0 1 1 9 18.5L4 20Z" stroke-linejoin="round"/></svg>`;
+
+  // ─── CSS ────────────────────────────────────────────────────────────
   const style = d.createElement('style');
   style.textContent = `
-    #wpc-trigger-wrap{display:none !important;max-width:380px !important;margin:18px 0 !important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif !important;opacity:0;transform:translateY(10px);transition:opacity .5s ease, transform .5s ease}
-    #wpc-trigger-wrap.wpc-in{opacity:1 !important;transform:translateY(0) !important}
-    .wpc-trigger{width:100% !important;display:flex !important;align-items:center !important;gap:12px !important;background:#ffffff !important;border:1.5px solid #1a1a1a !important;border-radius:12px !important;padding:12px 14px !important;cursor:pointer !important;text-align:left !important;transition:background .2s ease, transform .15s ease, box-shadow .2s ease !important}
-    .wpc-trigger:hover{background:#f5f5f5 !important;box-shadow:0 4px 14px rgba(0,0,0,0.12) !important;transform:translateY(-1px) !important}
-    .wpc-trigger:active{transform:translateY(0) !important}
-    .wpc-icon-badge{flex-shrink:0 !important;width:38px !important;height:38px !important;border-radius:10px !important;background:#f0f0f0 !important;display:flex !important;align-items:center !important;justify-content:center !important}
-    .wpc-icon-badge svg{width:20px !important;height:20px !important;stroke:#1a1a1a !important}
-    .wpc-trigger-text{flex:1 !important;min-width:0 !important;display:flex !important;flex-direction:column !important;gap:2px !important}
-    .wpc-trigger-text strong{font-size:13.5px !important;font-weight:800 !important;color:#1a1a1a !important;letter-spacing:-.01em !important}
-    .wpc-trigger-text small{font-size:11px !important;color:#777777 !important;font-weight:500 !important;line-height:1.3 !important}
-    .wpc-trigger-arrow{flex-shrink:0 !important;width:18px !important;height:18px !important;stroke:#1a1a1a !important;transition:transform .25s ease !important}
-    .wpc-trigger:hover .wpc-trigger-arrow{transform:translateX(3px) !important}
-    #wpc-modal-overlay{position:fixed !important;inset:0 !important;background:rgba(0,0,0,0.55) !important;z-index:99999 !important;display:none;align-items:center !important;justify-content:center !important;padding:20px !important;opacity:0;transition:opacity .3s ease !important}
-    #wpc-modal-overlay.wpc-open{display:flex !important;opacity:1 !important}
-    .wpc-modal-panel{position:relative !important;background:#ffffff !important;border-radius:14px !important;max-width:380px !important;width:100% !important;max-height:90vh !important;overflow-y:auto !important;box-shadow:0 24px 70px rgba(0,0,0,0.3) !important;transform:scale(.94) translateY(10px) !important;transition:transform .35s cubic-bezier(.22,.61,.36,1) !important}
-    #wpc-modal-overlay.wpc-open .wpc-modal-panel{transform:scale(1) translateY(0) !important}
-    .wpc-modal-panel *{box-sizing:border-box !important}
-    .wpc-modal-close{position:absolute !important;top:12px !important;right:12px !important;width:30px !important;height:30px !important;border-radius:50% !important;border:none !important;background:#f0f0f0 !important;color:#1a1a1a !important;font-size:19px !important;line-height:1 !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;z-index:2 !important;transition:background .2s ease !important}
-    .wpc-modal-close:hover{background:#e0e0e0 !important}
-    .wpc-swatch{height:7px !important;width:100% !important;background:repeating-linear-gradient(-45deg,#1a1a1a 0 6px,#4a4a4a 6px 12px) !important}
-    .wpc-body{padding:18px 20px 20px !important}
-    .wpc-header{display:flex !important;align-items:center !important;gap:12px !important;margin-bottom:16px !important}
-    .wpc-header h2{margin:0 !important;font-size:15px !important;font-weight:800 !important;color:#1a1a1a !important;letter-spacing:-.01em !important}
-    .wpc-header p{margin:2px 0 0 0 !important;font-size:11.5px !important;color:#888888 !important;line-height:1.3 !important}
-    .wpc-row{display:flex !important;gap:10px !important;margin-bottom:14px !important}
-    .wpc-field{flex:1 !important;min-width:0 !important}
-    .wpc-field label{display:block !important;margin:0 0 6px 0 !important;font-size:10.5px !important;font-weight:700 !important;color:#888888 !important;text-transform:uppercase !important;letter-spacing:.04em !important}
-    .wpc-stepper{display:flex !important;align-items:stretch !important;border:1.5px solid #dddddd !important;border-radius:9px !important;overflow:hidden !important;background:#fff !important;transition:border-color .2s !important}
-    .wpc-stepper:focus-within{border-color:#1a1a1a !important;box-shadow:0 0 0 3px rgba(0,0,0,0.1) !important}
-    .wpc-stepper button{width:30px !important;flex-shrink:0 !important;border:none !important;background:#f5f5f5 !important;color:#1a1a1a !important;font-size:16px !important;font-weight:700 !important;cursor:pointer !important;line-height:1 !important;padding:0 !important;transition:background .15s !important}
-    .wpc-stepper button:hover{background:#ececec !important}
-    .wpc-stepper button:active{background:#e0e0e0 !important}
-    .wpc-stepper input{width:100% !important;border:none !important;outline:none !important;text-align:center !important;font-size:13.5px !important;font-weight:700 !important;color:#222222 !important;padding:6px 2px !important;background:#fff !important}
-    .wpc-stepper input::-webkit-outer-spin-button,.wpc-stepper input::-webkit-inner-spin-button{-webkit-appearance:none !important;margin:0 !important}
-    .wpc-unit-wrap{position:relative !important}
-    .wpc-unit-wrap input{width:100% !important;border:1.5px solid #dddddd !important;border-radius:9px !important;padding:8px 26px 8px 10px !important;font-size:13.5px !important;font-weight:700 !important;color:#222222 !important;outline:none !important;transition:border-color .2s,box-shadow .2s !important}
-    .wpc-unit-wrap input:focus{border-color:#1a1a1a !important;box-shadow:0 0 0 3px rgba(0,0,0,0.1) !important}
-    .wpc-unit-wrap input::placeholder{color:#aaaaaa !important;font-weight:600 !important}
-    .wpc-unit-suffix{position:absolute !important;right:10px !important;top:50% !important;transform:translateY(-50%) !important;font-size:11.5px !important;color:#999999 !important;font-weight:700 !important;pointer-events:none !important}
-    .wpc-hint{margin:-4px 0 14px 0 !important;font-size:10.5px !important;color:#999999 !important;font-style:italic !important;line-height:1.3 !important}
-    .wpc-segment{position:relative !important;display:flex !important;background:#f0f0f0 !important;border-radius:9px !important;padding:3px !important;height:38px !important}
-    .wpc-segment input{position:absolute !important;opacity:0 !important;width:1px !important;height:1px !important;pointer-events:none !important}
-    .wpc-segment-highlight{position:absolute !important;top:3px !important;left:3px !important;bottom:3px !important;width:calc(33.333% - 4px) !important;background:#1a1a1a !important;border-radius:7px !important;transition:transform .35s cubic-bezier(.22,.61,.36,1) !important;z-index:0 !important;box-shadow:0 2px 6px rgba(0,0,0,0.22) !important}
-    .wpc-seg-1:checked ~ .wpc-segment-highlight{transform:translateX(0%) !important}
-    .wpc-seg-2:checked ~ .wpc-segment-highlight{transform:translateX(100%) !important}
-    .wpc-seg-3:checked ~ .wpc-segment-highlight{transform:translateX(200%) !important}
-    .wpc-segment label{position:relative !important;z-index:1 !important;flex:1 !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:11px !important;font-weight:700 !important;color:#888888 !important;cursor:pointer !important;border-radius:7px !important;transition:color .3s !important;text-align:center !important;padding:0 2px !important}
-    .wpc-seg-1:checked + label,.wpc-seg-2:checked + label,.wpc-seg-3:checked + label{color:#ffffff !important}
-    .wpc-segment input:focus-visible + label{outline:2px solid #1a1a1a !important;outline-offset:2px !important}
-    .wpc-result{max-height:0 !important;overflow:hidden !important;opacity:0 !important;transition:max-height .45s ease, opacity .4s ease, margin-top .45s ease !important;margin-top:0 !important}
-    .wpc-result.wpc-show{max-height:420px !important;opacity:1 !important;margin-top:4px !important}
-    .wpc-result-inner{background:#f7f7f7 !important;border:1px solid #e5e5e5 !important;border-radius:11px !important;padding:14px 14px 12px !important}
-    .wpc-stats{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:10px !important}
-    .wpc-stat-label{margin:0 !important;font-size:10px !important;letter-spacing:.05em !important;text-transform:uppercase !important;color:#777777 !important;font-weight:700 !important}
-    .wpc-area-val{margin:3px 0 0 0 !important;font-size:15px !important;font-weight:800 !important;color:#222222 !important}
-    .wpc-rolls-block{text-align:right !important;border-left:1px solid #e0e0e0 !important;padding-left:14px !important}
-    .wpc-rolls-val{margin:1px 0 0 0 !important;font-size:24px !important;font-weight:900 !important;color:#1a1a1a !important;letter-spacing:-.02em !important}
-    .wpc-rolls-vis{display:flex !important;flex-wrap:wrap !important;gap:5px !important;margin-top:11px !important;min-height:22px !important}
-    .wpc-roll-ico{display:inline-flex !important;align-items:center !important;justify-content:center !important;width:20px !important;height:20px !important;opacity:0;transform:scale(.3);animation:wpcPop .38s cubic-bezier(.34,1.56,.64,1) forwards}
-    .wpc-roll-ico svg{width:100% !important;height:100% !important}
+    #wpc-wrap{display:none!important;max-width:390px!important;margin:20px 0!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease}
+    #wpc-wrap.wpc-in{opacity:1!important;transform:translateY(0)!important}
+
+    .wpc-trigger{width:100%!important;display:flex!important;align-items:center!important;gap:13px!important;background:#fff!important;border:1.5px solid #1a1a1a!important;border-radius:14px!important;padding:13px 16px!important;cursor:pointer!important;text-align:left!important;transition:background .2s,box-shadow .2s,transform .15s!important}
+    .wpc-trigger:hover{background:#f7f7f7!important;box-shadow:0 6px 20px rgba(0,0,0,.1)!important;transform:translateY(-1px)!important}
+    .wpc-trigger:active{transform:translateY(0)!important}
+
+    .wpc-badge{flex-shrink:0!important;width:40px!important;height:40px!important;border-radius:11px!important;background:#f0f0f0!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#1a1a1a!important}
+    .wpc-badge svg{width:21px!important;height:21px!important}
+    .wpc-badge.wpc-badge--painel{background:#1a1a1a!important;color:#fff!important}
+
+    .wpc-trigger-text{flex:1!important;min-width:0!important}
+    .wpc-trigger-text strong{display:block!important;font-size:13.5px!important;font-weight:800!important;color:#1a1a1a!important;letter-spacing:-.01em!important}
+    .wpc-trigger-text small{display:block!important;font-size:11px!important;color:#888!important;margin-top:2px!important;line-height:1.3!important}
+
+    .wpc-mode-chip{display:inline-flex!important;align-items:center!important;gap:4px!important;padding:2px 8px!important;border-radius:99px!important;font-size:10px!important;font-weight:700!important;letter-spacing:.04em!important;text-transform:uppercase!important;margin-top:5px!important}
+    .wpc-mode-chip--rolo{background:#f0f0f0!important;color:#555!important}
+    .wpc-mode-chip--painel{background:#1a1a1a!important;color:#fff!important}
+
+    .wpc-arrow{flex-shrink:0!important;width:16px!important;height:16px!important;color:#1a1a1a!important;transition:transform .25s ease!important}
+    .wpc-trigger:hover .wpc-arrow{transform:translateX(3px)!important}
+
+    #wpc-overlay{position:fixed!important;inset:0!important;background:rgba(0,0,0,.5)!important;z-index:99999!important;display:none;align-items:center!important;justify-content:center!important;padding:20px!important;opacity:0;transition:opacity .3s ease!important}
+    #wpc-overlay.wpc-open{display:flex!important;opacity:1!important}
+
+    .wpc-panel{position:relative!important;background:#fff!important;border-radius:18px!important;max-width:390px!important;width:100%!important;max-height:92vh!important;overflow-y:auto!important;box-shadow:0 28px 80px rgba(0,0,0,.28)!important;transform:scale(.93) translateY(12px)!important;transition:transform .38s cubic-bezier(.22,.61,.36,1)!important}
+    #wpc-overlay.wpc-open .wpc-panel{transform:scale(1) translateY(0)!important}
+    .wpc-panel *{box-sizing:border-box!important}
+
+    .wpc-panel-header{padding:18px 20px 0!important;display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important}
+    .wpc-panel-header-left{display:flex!important;align-items:center!important;gap:12px!important}
+    .wpc-close{width:32px!important;height:32px!important;flex-shrink:0!important;border-radius:50%!important;border:none!important;background:#f0f0f0!important;color:#1a1a1a!important;font-size:20px!important;line-height:1!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;transition:background .2s!important;margin-top:-2px!important}
+    .wpc-close:hover{background:#e2e2e2!important}
+
+    .wpc-panel-title{font-size:15px!important;font-weight:800!important;color:#1a1a1a!important;letter-spacing:-.01em!important;margin:0!important}
+    .wpc-panel-sub{font-size:11.5px!important;color:#999!important;margin:3px 0 0!important}
+
+    .wpc-accent-bar{height:4px!important;margin:16px 0 0!important;border-radius:0!important;background:#1a1a1a!important}
+    .wpc-accent-bar--painel{background:linear-gradient(90deg,#1a1a1a 60%,#555 100%)!important}
+
+    .wpc-body{padding:18px 20px 22px!important}
+
+    .wpc-row{display:flex!important;gap:10px!important;margin-bottom:14px!important}
+    .wpc-field{flex:1!important;min-width:0!important}
+    .wpc-label{display:block!important;margin:0 0 6px!important;font-size:10px!important;font-weight:700!important;color:#999!important;text-transform:uppercase!important;letter-spacing:.05em!important}
+
+    .wpc-stepper{display:flex!important;align-items:stretch!important;border:1.5px solid #ddd!important;border-radius:10px!important;overflow:hidden!important;background:#fff!important;transition:border-color .2s,box-shadow .2s!important}
+    .wpc-stepper:focus-within{border-color:#1a1a1a!important;box-shadow:0 0 0 3px rgba(0,0,0,.09)!important}
+    .wpc-stepper button{width:32px!important;flex-shrink:0!important;border:none!important;background:#f5f5f5!important;color:#1a1a1a!important;font-size:17px!important;font-weight:700!important;cursor:pointer!important;padding:0!important;transition:background .15s!important}
+    .wpc-stepper button:hover{background:#eaeaea!important}
+    .wpc-stepper button:active{background:#e0e0e0!important}
+    .wpc-stepper input{width:100%!important;border:none!important;outline:none!important;text-align:center!important;font-size:13.5px!important;font-weight:700!important;color:#222!important;padding:7px 2px!important;background:#fff!important}
+    .wpc-stepper input::-webkit-outer-spin-button,.wpc-stepper input::-webkit-inner-spin-button{-webkit-appearance:none!important}
+
+    .wpc-unit-wrap{position:relative!important}
+    .wpc-unit-wrap input{width:100%!important;border:1.5px solid #ddd!important;border-radius:10px!important;padding:8px 28px 8px 11px!important;font-size:13.5px!important;font-weight:700!important;color:#222!important;outline:none!important;transition:border-color .2s,box-shadow .2s!important;background:#fff!important}
+    .wpc-unit-wrap input:focus{border-color:#1a1a1a!important;box-shadow:0 0 0 3px rgba(0,0,0,.09)!important}
+    .wpc-unit-wrap input::placeholder{color:#bbb!important;font-weight:500!important}
+    .wpc-unit-suf{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;font-size:11px!important;color:#aaa!important;font-weight:700!important;pointer-events:none!important}
+
+    .wpc-seg{position:relative!important;display:flex!important;background:#f0f0f0!important;border-radius:10px!important;padding:3px!important;height:38px!important}
+    .wpc-seg input{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;pointer-events:none!important}
+    .wpc-seg-hl{position:absolute!important;top:3px!important;left:3px!important;bottom:3px!important;width:calc(33.333% - 4px)!important;background:#1a1a1a!important;border-radius:8px!important;transition:transform .35s cubic-bezier(.22,.61,.36,1)!important;z-index:0!important;box-shadow:0 2px 8px rgba(0,0,0,.2)!important}
+    .wpc-s1:checked ~ .wpc-seg-hl{transform:translateX(0%)!important}
+    .wpc-s2:checked ~ .wpc-seg-hl{transform:translateX(100%)!important}
+    .wpc-s3:checked ~ .wpc-seg-hl{transform:translateX(200%)!important}
+    .wpc-seg label{position:relative!important;z-index:1!important;flex:1!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:11px!important;font-weight:700!important;color:#999!important;cursor:pointer!important;border-radius:8px!important;transition:color .25s!important;padding:0 2px!important}
+    .wpc-s1:checked + label,.wpc-s2:checked + label,.wpc-s3:checked + label{color:#fff!important}
+
+    .wpc-hint{margin:-2px 0 14px!important;font-size:10.5px!important;color:#aaa!important;font-style:italic!important;line-height:1.35!important}
+
+    .wpc-divider{height:1px!important;background:#f0f0f0!important;margin:16px 0!important}
+
+    .wpc-result{max-height:0!important;overflow:hidden!important;opacity:0!important;transition:max-height .45s ease,opacity .4s ease,margin-top .4s ease!important;margin-top:0!important}
+    .wpc-result.wpc-show{max-height:500px!important;opacity:1!important;margin-top:2px!important}
+
+    .wpc-result-inner{background:#f8f8f8!important;border:1px solid #ebebeb!important;border-radius:13px!important;padding:15px!important}
+
+    .wpc-stats{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-bottom:12px!important}
+    .wpc-stat{background:#fff!important;border:1px solid #ebebeb!important;border-radius:10px!important;padding:10px 12px!important}
+    .wpc-stat-label{font-size:9.5px!important;font-weight:700!important;letter-spacing:.05em!important;text-transform:uppercase!important;color:#aaa!important;margin:0 0 4px!important}
+    .wpc-stat-val{font-size:22px!important;font-weight:900!important;color:#1a1a1a!important;letter-spacing:-.02em!important;line-height:1!important}
+    .wpc-stat-unit{font-size:12px!important;font-weight:600!important;color:#aaa!important;margin-left:2px!important}
+    .wpc-stat--highlight .wpc-stat-val{color:#1a1a1a!important}
+
+    .wpc-painel-detail{background:#fff!important;border:1px solid #ebebeb!important;border-radius:10px!important;padding:10px 12px!important;margin-bottom:10px!important}
+    .wpc-painel-detail-label{font-size:9.5px!important;font-weight:700!important;letter-spacing:.05em!important;text-transform:uppercase!important;color:#aaa!important;margin:0 0 6px!important}
+    .wpc-painel-mods{display:flex!important;flex-wrap:wrap!important;gap:5px!important}
+    .wpc-painel-mod{display:inline-flex!important;align-items:center!important;gap:4px!important;padding:4px 9px!important;background:#f0f0f0!important;border-radius:7px!important;font-size:11px!important;font-weight:700!important;color:#444!important}
+    .wpc-painel-mod svg{width:12px!important;height:12px!important;color:#888!important}
+
+    .wpc-rolls-vis{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:8px!important;min-height:22px!important}
+    .wpc-roll-ico{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:20px!important;height:20px!important;color:#1a1a1a!important;opacity:0;transform:scale(.3);animation:wpcPop .38s cubic-bezier(.34,1.56,.64,1) forwards}
+    .wpc-roll-ico svg{width:100%!important;height:100%!important}
+    .wpc-roll-more{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:20px!important;padding:0 6px!important;background:#1a1a1a!important;color:#fff!important;font-size:10px!important;font-weight:800!important;border-radius:6px!important;opacity:0;transform:scale(.3);animation:wpcPop .38s cubic-bezier(.34,1.56,.64,1) forwards}
     @keyframes wpcPop{to{opacity:1;transform:scale(1)}}
-    .wpc-roll-more{display:inline-flex !important;align-items:center !important;justify-content:center !important;height:20px !important;padding:0 6px !important;background:#1a1a1a !important;color:#fff !important;font-size:10px !important;font-weight:800 !important;border-radius:6px !important;opacity:0;transform:scale(.3);animation:wpcPop .38s cubic-bezier(.34,1.56,.64,1) forwards}
-    .wpc-whats-btn{display:flex !important;align-items:center !important;justify-content:center !important;gap:7px !important;width:100% !important;margin-top:13px !important;background:#1a1a1a !important;color:#ffffff !important;border:none !important;border-radius:8px !important;padding:10px !important;font-size:12.5px !important;font-weight:700 !important;cursor:pointer !important;transition:transform .15s ease, box-shadow .15s ease, filter .15s ease !important}
-    .wpc-whats-btn svg{width:15px !important;height:15px !important;flex-shrink:0 !important}
-    .wpc-whats-btn:hover{transform:translateY(-2px) !important;box-shadow:0 6px 16px rgba(0,0,0,0.25) !important;filter:brightness(1.5) !important}
-    .wpc-whats-btn:active{transform:translateY(0) !important}
-    @media (prefers-reduced-motion: reduce){#wpc-trigger-wrap,#wpc-modal-overlay,.wpc-modal-panel,.wpc-roll-ico,.wpc-roll-more,.wpc-segment-highlight,.wpc-result{transition:none !important;animation:none !important}}
+
+    .wpc-whats-btn{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;margin-top:12px!important;background:#1a1a1a!important;color:#fff!important;border:none!important;border-radius:10px!important;padding:11px!important;font-size:12.5px!important;font-weight:700!important;cursor:pointer!important;transition:transform .15s,box-shadow .15s,opacity .15s!important;letter-spacing:.01em!important}
+    .wpc-whats-btn svg{width:16px!important;height:16px!important;flex-shrink:0!important}
+    .wpc-whats-btn:hover{transform:translateY(-2px)!important;box-shadow:0 8px 20px rgba(0,0,0,.22)!important}
+    .wpc-whats-btn:active{transform:translateY(0)!important}
+    .wpc-whats-btn:disabled{opacity:.4!important;cursor:not-allowed!important;transform:none!important;box-shadow:none!important}
+
+    @media(prefers-reduced-motion:reduce){#wpc-wrap,#wpc-overlay,.wpc-panel,.wpc-roll-ico,.wpc-roll-more,.wpc-seg-hl,.wpc-result{transition:none!important;animation:none!important}}
   `;
   d.head.appendChild(style);
 
-  // Cria o HTML
-  const triggerWrap = d.createElement('div');
-  triggerWrap.id = 'wpc-trigger-wrap';
-  triggerWrap.innerHTML = `
+  // ─── HTML: trigger ───────────────────────────────────────────────────
+  const wrap = d.createElement('div');
+  wrap.id = 'wpc-wrap';
+  wrap.innerHTML = `
     <button type="button" class="wpc-trigger" id="wpc-trigger" aria-haspopup="dialog">
-      <span class="wpc-icon-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="6" rx="2"></rect><path d="M9 10v4a3 3 0 0 0 3 3h0"></path><rect x="11" y="17" width="5" height="4" rx="1"></rect></svg>
-      </span>
+      <span class="wpc-badge${isPainel ? ' wpc-badge--painel' : ''}">${isPainel ? ICON_PANEL : ICON_CALC}</span>
       <span class="wpc-trigger-text">
-        <strong>Calculadora de Rolos</strong>
-        <small>Toque para saber quantos rolos você precisa</small>
+        <strong>${isPainel ? 'Calculadora de Painel' : 'Calculadora de Rolos'}</strong>
+        <small>${isPainel ? 'Descubra quantos m² você precisa' : 'Descubra quantos rolos você precisa'}</small>
+        <span class="wpc-mode-chip wpc-mode-chip--${isPainel ? 'painel' : 'rolo'}">${isPainel ? 'Modo painel' : 'Modo rolo'}</span>
       </span>
-      <svg class="wpc-trigger-arrow" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+      <span class="wpc-arrow">${ICON_CHEVRON}</span>
     </button>
   `;
 
+  // ─── HTML: modal ─────────────────────────────────────────────────────
   const overlay = d.createElement('div');
-  overlay.id = 'wpc-modal-overlay';
-  overlay.innerHTML = `
-    <div class="wpc-modal-panel" role="dialog" aria-modal="true" aria-labelledby="wpc-modal-title">
-      <div class="wpc-swatch"></div>
-      <button type="button" class="wpc-modal-close" id="wpc-modal-close" aria-label="Fechar calculadora">×</button>
-      <div class="wpc-body">
-        <div class="wpc-header">
-          <span class="wpc-icon-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="6" rx="2"></rect><path d="M9 10v4a3 3 0 0 0 3 3h0"></path><rect x="11" y="17" width="5" height="4" rx="1"></rect></svg>
-          </span>
-          <div>
-            <h2 id="wpc-modal-title">Calculadora de Rolos</h2>
-            <p>Veja em segundos quantos rolos você precisa</p>
-          </div>
-        </div>
-        <div class="wpc-row">
-          <div class="wpc-field">
-            <label for="wpc-cov">m² por rolo</label>
-            <div class="wpc-stepper">
-              <button type="button" id="wpc-cov-minus" aria-label="Diminuir">−</button>
-              <input id="wpc-cov" type="number" inputmode="decimal" step="0.1" min="0.1" value="5.3">
-              <button type="button" id="wpc-cov-plus" aria-label="Aumentar">+</button>
+  overlay.id = 'wpc-overlay';
+
+  if (isPainel) {
+    overlay.innerHTML = `
+      <div class="wpc-panel" role="dialog" aria-modal="true" aria-labelledby="wpc-modal-title">
+        <div class="wpc-panel-header">
+          <div class="wpc-panel-header-left">
+            <span class="wpc-badge wpc-badge--painel">${ICON_PANEL}</span>
+            <div>
+              <p class="wpc-panel-title" id="wpc-modal-title">Calculadora de Painel</p>
+              <p class="wpc-panel-sub">Informe as dimensões da parede</p>
             </div>
           </div>
+          <button type="button" class="wpc-close" id="wpc-close" aria-label="Fechar">×</button>
         </div>
-        <div class="wpc-row" style="margin-bottom:6px">
-          <div class="wpc-field">
-            <label>Tipo de estampa</label>
-            <div class="wpc-segment" role="radiogroup" aria-label="Tipo de estampa">
-              <input class="wpc-seg-1" type="radio" name="wpc-margin" id="wpc-m1" value="0.05">
-              <label for="wpc-m1">Liso</label>
-              <input class="wpc-seg-2" type="radio" name="wpc-margin" id="wpc-m2" value="0.10" checked>
-              <label for="wpc-m2">Médio</label>
-              <input class="wpc-seg-3" type="radio" name="wpc-margin" id="wpc-m3" value="0.15">
-              <label for="wpc-m3">Grande</label>
-              <div class="wpc-segment-highlight"></div>
+        <div class="wpc-accent-bar wpc-accent-bar--painel"></div>
+        <div class="wpc-body">
+          <div class="wpc-row">
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-pw">Largura da parede</label>
+              <div class="wpc-unit-wrap"><input id="wpc-pw" type="number" inputmode="decimal" min="0" step="0.01" placeholder="3,50"><span class="wpc-unit-suf">m</span></div>
+            </div>
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-ph">Altura da parede</label>
+              <div class="wpc-unit-wrap"><input id="wpc-ph" type="number" inputmode="decimal" min="0" step="0.01" placeholder="2,70"><span class="wpc-unit-suf">m</span></div>
             </div>
           </div>
-        </div>
-        <p class="wpc-hint">*O m² por rolo e o tamanho da estampa estão na descrição do produto.</p>
-        <div class="wpc-row">
-          <div class="wpc-field">
-            <label for="wpc-w">Largura</label>
-            <div class="wpc-unit-wrap"><input id="wpc-w" type="number" inputmode="decimal" min="0" step="0.01" placeholder="3,50"><span class="wpc-unit-suffix">m</span></div>
+          <div class="wpc-row">
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-pmod-w">Largura do módulo</label>
+              <div class="wpc-unit-wrap"><input id="wpc-pmod-w" type="number" inputmode="decimal" min="0" step="0.01" placeholder="1,20"><span class="wpc-unit-suf">m</span></div>
+            </div>
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-pmod-h">Altura do módulo</label>
+              <div class="wpc-unit-wrap"><input id="wpc-pmod-h" type="number" inputmode="decimal" min="0" step="0.01" placeholder="2,70"><span class="wpc-unit-suf">m</span></div>
+            </div>
           </div>
-          <div class="wpc-field">
-            <label for="wpc-h">Altura</label>
-            <div class="wpc-unit-wrap"><input id="wpc-h" type="number" inputmode="decimal" min="0" step="0.01" placeholder="2,70"><span class="wpc-unit-suffix">m</span></div>
-          </div>
-        </div>
-        <div class="wpc-result" id="wpc-result" aria-live="polite">
-          <div class="wpc-result-inner">
-            <div class="wpc-stats">
-              <div>
-                <p class="wpc-stat-label">Área total</p>
-                <p class="wpc-area-val"><span id="wpc-area">0</span> m²</p>
+          <p class="wpc-hint">*Dimensões do módulo estão na descrição do produto.</p>
+          <div class="wpc-result" id="wpc-result" aria-live="polite">
+            <div class="wpc-result-inner">
+              <div class="wpc-stats">
+                <div class="wpc-stat">
+                  <p class="wpc-stat-label">Área da parede</p>
+                  <p class="wpc-stat-val"><span id="wpc-area">0</span><span class="wpc-stat-unit">m²</span></p>
+                </div>
+                <div class="wpc-stat wpc-stat--highlight">
+                  <p class="wpc-stat-label">Você precisa de</p>
+                  <p class="wpc-stat-val"><span id="wpc-qty">0</span><span class="wpc-stat-unit">m²</span></p>
+                </div>
               </div>
-              <div class="wpc-rolls-block">
-                <p class="wpc-stat-label">Você precisa de</p>
-                <p class="wpc-rolls-val"><span id="wpc-rolls">0</span> rolos</p>
+              <div class="wpc-painel-detail" id="wpc-painel-detail" style="display:none">
+                <p class="wpc-painel-detail-label">Módulos sugeridos</p>
+                <div class="wpc-painel-mods" id="wpc-painel-mods"></div>
               </div>
+              <button type="button" class="wpc-whats-btn" id="wpc-whats-btn" disabled>
+                ${ICON_WHATS} Solicitar orçamento no WhatsApp
+              </button>
             </div>
-            <div class="wpc-rolls-vis" id="wpc-rolls-vis"></div>
-            <button type="button" class="wpc-whats-btn" id="wpc-whats-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l1.4-4.2A8 8 0 1 1 9 18.5L4 20Z" stroke-linejoin="round"></path></svg>
-              Solicitar orçamento no WhatsApp
-            </button>
           </div>
         </div>
       </div>
-    </div>
-  `;
-
-  function encontrarAreaDeCompra() {
-    return d.querySelector('.js-product-buy-container') || d.querySelector('.js-product-form') || d.querySelector('#product-form') || d.querySelector('.js-product-container');
+    `;
+  } else {
+    overlay.innerHTML = `
+      <div class="wpc-panel" role="dialog" aria-modal="true" aria-labelledby="wpc-modal-title">
+        <div class="wpc-panel-header">
+          <div class="wpc-panel-header-left">
+            <span class="wpc-badge">${ICON_CALC}</span>
+            <div>
+              <p class="wpc-panel-title" id="wpc-modal-title">Calculadora de Rolos</p>
+              <p class="wpc-panel-sub">Informe as dimensões da parede</p>
+            </div>
+          </div>
+          <button type="button" class="wpc-close" id="wpc-close" aria-label="Fechar">×</button>
+        </div>
+        <div class="wpc-accent-bar"></div>
+        <div class="wpc-body">
+          <div class="wpc-row">
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-cov">m² por rolo</label>
+              <div class="wpc-stepper">
+                <button type="button" id="wpc-cov-minus" aria-label="Diminuir">−</button>
+                <input id="wpc-cov" type="number" inputmode="decimal" step="0.1" min="0.1" value="5.3">
+                <button type="button" id="wpc-cov-plus" aria-label="Aumentar">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="wpc-row" style="margin-bottom:6px">
+            <div class="wpc-field">
+              <label class="wpc-label">Tipo de estampa</label>
+              <div class="wpc-seg" role="radiogroup" aria-label="Tipo de estampa">
+                <input class="wpc-s1" type="radio" name="wpc-margin" id="wpc-m1" value="0.05">
+                <label for="wpc-m1">Liso</label>
+                <input class="wpc-s2" type="radio" name="wpc-margin" id="wpc-m2" value="0.10" checked>
+                <label for="wpc-m2">Médio</label>
+                <input class="wpc-s3" type="radio" name="wpc-margin" id="wpc-m3" value="0.15">
+                <label for="wpc-m3">Grande</label>
+                <div class="wpc-seg-hl"></div>
+              </div>
+            </div>
+          </div>
+          <p class="wpc-hint">*O m² por rolo e o tipo de estampa estão na descrição do produto.</p>
+          <div class="wpc-divider"></div>
+          <div class="wpc-row">
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-w">Largura</label>
+              <div class="wpc-unit-wrap"><input id="wpc-w" type="number" inputmode="decimal" min="0" step="0.01" placeholder="3,50"><span class="wpc-unit-suf">m</span></div>
+            </div>
+            <div class="wpc-field">
+              <label class="wpc-label" for="wpc-h">Altura</label>
+              <div class="wpc-unit-wrap"><input id="wpc-h" type="number" inputmode="decimal" min="0" step="0.01" placeholder="2,70"><span class="wpc-unit-suf">m</span></div>
+            </div>
+          </div>
+          <div class="wpc-result" id="wpc-result" aria-live="polite">
+            <div class="wpc-result-inner">
+              <div class="wpc-stats">
+                <div class="wpc-stat">
+                  <p class="wpc-stat-label">Área total</p>
+                  <p class="wpc-stat-val"><span id="wpc-area">0</span><span class="wpc-stat-unit">m²</span></p>
+                </div>
+                <div class="wpc-stat wpc-stat--highlight">
+                  <p class="wpc-stat-label">Você precisa de</p>
+                  <p class="wpc-stat-val"><span id="wpc-rolls">0</span><span class="wpc-stat-unit">rolos</span></p>
+                </div>
+              </div>
+              <div class="wpc-rolls-vis" id="wpc-rolls-vis"></div>
+              <button type="button" class="wpc-whats-btn" id="wpc-whats-btn" disabled>
+                ${ICON_WHATS} Solicitar orçamento no WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  function isPaginaDeProdutoUnico() {
-    return !!(encontrarAreaDeCompra() || d.getElementById('single-product'));
+  // ─── Helpers ─────────────────────────────────────────────────────────
+  function findBuyArea() {
+    return (
+      d.querySelector('.js-product-buy-container') ||
+      d.querySelector('.js-product-form') ||
+      d.querySelector('#product-form') ||
+      d.querySelector('.js-product-container')
+    );
   }
 
-  function initCalc() {
-    if (!isPaginaDeProdutoUnico()) return;
+  function isSingleProduct() {
+    return !!(findBuyArea() || d.getElementById('single-product'));
+  }
 
-    const alvo = encontrarAreaDeCompra();
-    const escopoProduto = d.getElementById('single-product') || d;
+  function productName() {
+    const el = d.querySelector('[data-store^="product-item-name"], .js-item-name, .product-title, .js-product-name, h1');
+    return (el?.textContent || d.title || 'este produto').replace(/\s+/g, ' ').trim();
+  }
 
-    if (alvo && alvo.parentNode) {
-      alvo.parentNode.insertBefore(triggerWrap, alvo);
+  function animateValue(span, from, to, decimals) {
+    const dur = 420, start = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const cur = from + (to - from) * eased;
+      span.textContent = decimals ? cur.toFixed(decimals).replace('.', ',') : Math.round(cur);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ─── Init ────────────────────────────────────────────────────────────
+  function init() {
+    if (!isSingleProduct()) return;
+
+    const buyArea = findBuyArea();
+    const scope = d.getElementById('single-product') || d;
+
+    if (buyArea?.parentNode) {
+      buyArea.parentNode.insertBefore(wrap, buyArea);
     } else {
-      const fallback = escopoProduto.querySelector('h1') || escopoProduto;
-      if (fallback.parentNode) fallback.parentNode.insertBefore(triggerWrap, fallback.nextSibling);
+      const fallback = scope.querySelector('h1') || scope;
+      if (fallback.parentNode) fallback.parentNode.insertBefore(wrap, fallback.nextSibling);
     }
 
-    triggerWrap.style.setProperty('display', 'block', 'important');
-    requestAnimationFrame(() => triggerWrap.classList.add('wpc-in'));
+    wrap.style.setProperty('display', 'block', 'important');
+    requestAnimationFrame(() => wrap.classList.add('wpc-in'));
     d.body.appendChild(overlay);
 
     const triggerBtn = d.getElementById('wpc-trigger');
-    const closeBtn = d.getElementById('wpc-modal-close');
+    const closeBtn = d.getElementById('wpc-close');
 
     function openModal() {
       overlay.classList.add('wpc-open');
@@ -217,6 +361,99 @@
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
     d.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('wpc-open')) closeModal(); });
 
+    if (isPainel) {
+      initPainelCalc();
+    } else {
+      initRollCalc();
+    }
+  }
+
+  // ─── Modo Painel ─────────────────────────────────────────────────────
+  function initPainelCalc() {
+    const pwI = d.getElementById('wpc-pw');
+    const phI = d.getElementById('wpc-ph');
+    const modWI = d.getElementById('wpc-pmod-w');
+    const modHI = d.getElementById('wpc-pmod-h');
+    const resultBox = d.getElementById('wpc-result');
+    const areaSpan = d.getElementById('wpc-area');
+    const qtySpan = d.getElementById('wpc-qty');
+    const detail = d.getElementById('wpc-painel-detail');
+    const modsWrap = d.getElementById('wpc-painel-mods');
+    const whatsBtn = d.getElementById('wpc-whats-btn');
+
+    let lastArea = 0, lastQty = 0, animArea = 0, animQty = 0;
+
+    function update() {
+      const pw = parseFloat(pwI.value) || 0;
+      const ph = parseFloat(phI.value) || 0;
+      const mw = parseFloat(modWI.value) || 0;
+      const mh = parseFloat(modHI.value) || 0;
+
+      if (pw > 0 && ph > 0) {
+        const area = pw * ph;
+        const qty = area; // vendido por m², sem margem
+        animateValue(areaSpan, animArea, area, 2);
+        animateValue(qtySpan, animQty, qty, 2);
+        animArea = area; animQty = qty;
+        lastArea = area; lastQty = qty;
+
+        // sugestão de módulos
+        if (mw > 0 && mh > 0) {
+          const cols = Math.ceil(pw / mw);
+          const rows = Math.ceil(ph / mh);
+          const total = cols * rows;
+          modsWrap.innerHTML = '';
+          for (let i = 0; i < Math.min(total, 8); i++) {
+            const m = d.createElement('span');
+            m.className = 'wpc-painel-mod';
+            m.innerHTML = `${ICON_PANEL} Módulo ${i + 1}`;
+            modsWrap.appendChild(m);
+          }
+          if (total > 8) {
+            const more = d.createElement('span');
+            more.className = 'wpc-painel-mod';
+            more.textContent = `+${total - 8}`;
+            modsWrap.appendChild(more);
+          }
+          detail.style.display = '';
+          const dimTxt = `${cols} col × ${rows} lin = ${total} módulo${total !== 1 ? 's' : ''}`;
+          detail.querySelector('.wpc-painel-detail-label').textContent = `Módulos sugeridos — ${dimTxt}`;
+        } else {
+          detail.style.display = 'none';
+        }
+
+        resultBox.classList.add('wpc-show');
+        whatsBtn.disabled = false;
+      } else {
+        resultBox.classList.remove('wpc-show');
+        whatsBtn.disabled = true;
+      }
+    }
+
+    [pwI, phI, modWI, modHI].forEach(i => i.addEventListener('input', update));
+
+    whatsBtn.addEventListener('click', () => {
+      if (!lastQty) return;
+      const areaTxt = lastArea.toFixed(2).replace('.', ',');
+      const mw = parseFloat(modWI.value) || 0;
+      const mh = parseFloat(modHI.value) || 0;
+      const pw = parseFloat(pwI.value) || 0;
+      const ph = parseFloat(phI.value) || 0;
+      let extra = '';
+      if (mw > 0 && mh > 0) {
+        const cols = Math.ceil(pw / mw);
+        const rows = Math.ceil(ph / mh);
+        extra = `, aproximadamente ${cols * rows} módulos`;
+      }
+      const msg = encodeURIComponent(
+        `Olá! Calculei no site que preciso de ${areaTxt} m²${extra} de ${productName()}. Gostaria de confirmar disponibilidade e valor.`
+      );
+      window.open(`https://wa.me/${WHATSAPP_NUM}?text=${msg}`, '_blank', 'noopener');
+    });
+  }
+
+  // ─── Modo Rolo ───────────────────────────────────────────────────────
+  function initRollCalc() {
     const covI = d.getElementById('wpc-cov');
     const wI = d.getElementById('wpc-w');
     const hI = d.getElementById('wpc-h');
@@ -226,28 +463,11 @@
     const rollsVis = d.getElementById('wpc-rolls-vis');
     const whatsBtn = d.getElementById('wpc-whats-btn');
 
-    let ultimaArea = 0, ultimosRolos = 0, animArea = 0, animRolos = 0;
+    let lastArea = 0, lastRolls = 0, animArea = 0, animRolls = 0;
 
-    function margemAtual() {
+    function getMargin() {
       const sel = d.querySelector('input[name="wpc-margin"]:checked');
       return sel ? parseFloat(sel.value) : 0.10;
-    }
-
-    function nomeDoProduto() {
-      const el = d.querySelector('[data-store^="product-item-name"], .js-item-name, .product-title, .js-product-name, h1');
-      return (el?.textContent || d.title || 'este papel de parede').replace(/\s+/g, ' ').trim();
-    }
-
-    function animateValue(span, from, to, decimals) {
-      const dur = 450, start = performance.now();
-      function step(now) {
-        const p = Math.min(1, (now - start) / dur);
-        const eased = 1 - Math.pow(1 - p, 3);
-        const cur = from + (to - from) * eased;
-        span.textContent = decimals ? cur.toFixed(decimals).replace('.', ',') : Math.round(cur);
-        if (p < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
     }
 
     function renderRolls(n) {
@@ -256,14 +476,14 @@
       for (let i = 0; i < shown; i++) {
         const span = d.createElement('span');
         span.className = 'wpc-roll-ico';
-        span.style.animationDelay = (i * 40) + 'ms';
-        span.innerHTML = ROLL_ICON_SVG;
+        span.style.animationDelay = (i * 38) + 'ms';
+        span.innerHTML = ICON_ROLL;
         rollsVis.appendChild(span);
       }
       if (n > MAX_ICONS) {
         const more = d.createElement('span');
         more.className = 'wpc-roll-more';
-        more.style.animationDelay = (shown * 40) + 'ms';
+        more.style.animationDelay = (shown * 38) + 'ms';
         more.textContent = '+' + (n - MAX_ICONS);
         rollsVis.appendChild(more);
       }
@@ -273,19 +493,21 @@
       const w = parseFloat(wI.value) || 0;
       const h = parseFloat(hI.value) || 0;
       const c = parseFloat(covI.value) || 0;
-      const m = margemAtual();
+      const m = getMargin();
 
       if (w > 0 && h > 0 && c > 0) {
         const area = w * h;
-        const rolos = Math.ceil((area * (1 + m)) / c);
+        const rolls = Math.ceil((area * (1 + m)) / c);
         animateValue(areaSpan, animArea, area, 2);
-        animateValue(rollsSpan, animRolos, rolos, 0);
-        animArea = area; animRolos = rolos;
-        ultimaArea = area; ultimosRolos = rolos;
-        renderRolls(rolos);
+        animateValue(rollsSpan, animRolls, rolls, 0);
+        animArea = area; animRolls = rolls;
+        lastArea = area; lastRolls = rolls;
+        renderRolls(rolls);
         resultBox.classList.add('wpc-show');
+        whatsBtn.disabled = false;
       } else {
         resultBox.classList.remove('wpc-show');
+        whatsBtn.disabled = true;
       }
     }
 
@@ -304,12 +526,15 @@
     });
 
     whatsBtn.addEventListener('click', () => {
-      if (!ultimosRolos) return;
-      const areaTxt = ultimaArea.toFixed(2).replace('.', ',');
-      const msg = encodeURIComponent(`Olá! Calculei no site que preciso de ${ultimosRolos} rolos (${areaTxt} m²) de ${nomeDoProduto()}. Gostaria de confirmar disponibilidade e valor.`);
+      if (!lastRolls) return;
+      const areaTxt = lastArea.toFixed(2).replace('.', ',');
+      const msg = encodeURIComponent(
+        `Olá! Calculei no site que preciso de ${lastRolls} rolos (${areaTxt} m²) de ${productName()}. Gostaria de confirmar disponibilidade e valor.`
+      );
       window.open(`https://wa.me/${WHATSAPP_NUM}?text=${msg}`, '_blank', 'noopener');
     });
   }
 
-  if (d.readyState === 'complete') initCalc(); else window.addEventListener('load', initCalc);
+  // ─── Boot ────────────────────────────────────────────────────────────
+  if (d.readyState === 'complete') init(); else window.addEventListener('load', init);
 })();
