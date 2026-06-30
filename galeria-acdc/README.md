@@ -1,18 +1,48 @@
-# Galeria ACDC
+# Galeria ACDC — versão limpa
 
-Widget de galeria para a ACDC Casa.
+Esta pasta agora tem uma estrutura simples:
 
-Como atualizar as fotos:
+- `site.js` — script da galeria pública do site.
+- `admin.js` — painel completo para colar links, pré-visualizar e salvar no GitHub.
+- `fotos.txt` — lista das fotos usadas pela galeria.
 
-1. Abra o arquivo `fotos.txt`.
-2. Clique no lápis do GitHub para editar.
-3. Cole um link de foto por linha.
-4. Clique em **Commit changes**.
+## Script da galeria pública
 
-Formato aceito:
+Cole no local onde a galeria deve aparecer:
 
-```txt
-https://link-da-foto.jpg | Texto alternativo
+```html
+<script
+  src="https://cdn.jsdelivr.net/gh/escalopicitas-code/Widgets-ACDC-@main/galeria-acdc/site.js?v=1"
+  data-title="Galeria"
+  data-eyebrow="Portfólio completo"
+  data-fotos="https://raw.githubusercontent.com/escalopicitas-code/Widgets-ACDC-/main/galeria-acdc/fotos.txt">
+</script>
 ```
 
-O widget lê esse arquivo e monta a galeria automaticamente, sem precisar editar o HTML de cada foto.
+## Script do painel de atualização
+
+Cole em uma página protegida/admin:
+
+```html
+<script
+  src="https://cdn.jsdelivr.net/gh/escalopicitas-code/Widgets-ACDC-@main/galeria-acdc/admin.js?v=1"
+  data-repo="escalopicitas-code/Widgets-ACDC-"
+  data-path="galeria-acdc/fotos.txt"
+  data-branch="main">
+</script>
+```
+
+## Como atualizar fotos
+
+1. Abra a página onde está o `admin.js`.
+2. Cole o token do GitHub.
+3. Cole os links das fotos, um por linha.
+4. Clique em `Pré-visualizar`.
+5. Clique em `Salvar galeria`.
+
+Formato:
+
+```txt
+https://site.com/foto.jpg
+https://site.com/foto.jpg | Descrição da foto
+```
