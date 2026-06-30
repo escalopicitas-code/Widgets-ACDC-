@@ -1,0 +1,44 @@
+(function(){
+  var current=document.currentScript;
+  if(!current){
+    var scripts=document.querySelectorAll('script[src*="galeria-acdc.js"]');
+    current=scripts[scripts.length-1];
+  }
+  var targetSelector=current&&current.getAttribute('data-target');
+  var target=targetSelector?document.querySelector(targetSelector):null;
+  if(!target){
+    target=document.createElement('div');
+    if(current&&current.parentNode){current.parentNode.insertBefore(target,current);}else{document.body.appendChild(target);}
+  }
+  var fotosUrl=(current&&current.getAttribute('data-fotos'))||'https://raw.githubusercontent.com/escalopicitas-code/Widgets-ACDC-/main/galeria-acdc/fotos.txt';
+  var title=(current&&current.getAttribute('data-title'))||'Galeria';
+  var eyebrow=(current&&current.getAttribute('data-eyebrow'))||'Portfólio completo';
+  var uid='acdcgal_'+Math.random().toString(36).slice(2);
+
+  if(!document.getElementById('acdc-gallery-style')){
+    var st=document.createElement('style');
+    st.id='acdc-gallery-style';
+    st.textContent='@import url("https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Open+Sans:wght@400;600&display=swap");.acdcgal{--paper:#fff;--ink:#111;--muted:rgba(17,17,17,.6);--line:rgba(17,17,17,.12);background:var(--paper);color:var(--ink);font-family:"Open Sans",system-ui,sans-serif;padding:clamp(3rem,8vh,6rem) clamp(1.25rem,5vw,3rem)}.acdcgal *{box-sizing:border-box}.acdcgal__wrap{max-width:1280px;margin:0 auto}.acdcgal__eyebrow{margin:0 0 .6rem;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}.acdcgal__title{margin:0 0 clamp(2rem,5vh,3rem);font-family:"Hammersmith One",sans-serif;font-size:clamp(2rem,5.5vw,3.6rem);font-weight:400;line-height:1.05;text-transform:uppercase}.acdcgal__stage{position:relative}.acdcgal__track{display:flex;gap:clamp(.75rem,2vw,1.25rem);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:4px}.acdcgal__track::-webkit-scrollbar{display:none}.acdcgal__item{position:relative;flex:0 0 calc((100% - 2 * clamp(.75rem,2vw,1.25rem))/2.4);aspect-ratio:1/1;border:0;padding:0;border-radius:4px;overflow:hidden;background:#eee;cursor:pointer;scroll-snap-align:start}.acdcgal__item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.16,1,.3,1)}.acdcgal__item:hover img{transform:scale(1.08)}.acdcgal__arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.92);color:var(--ink);box-shadow:0 6px 20px rgba(0,0,0,.1);cursor:pointer;font-size:32px;line-height:1}.acdcgal__arrow:hover{background:var(--ink);color:var(--paper)}.acdcgal__prev{left:-10px}.acdcgal__next{right:-10px}.acdcgal__viewall{display:block;margin:clamp(1.5rem,3vh,2rem) auto 0;padding:11px 22px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.acdcgal__viewall:hover{background:var(--ink);color:var(--paper)}.acdcgal.is-expanded .acdcgal__track{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible;scroll-snap-type:none}.acdcgal.is-expanded .acdcgal__item{flex:none;width:100%}.acdcgal.is-expanded .acdcgal__arrow{display:none}.acdcgal__msg{width:100%;padding:22px;border:1px dashed var(--line);color:var(--muted);font-size:14px}.acdcgal__lightbox{position:fixed;inset:0;z-index:2147483000;background:rgba(8,8,8,.88);display:flex;align-items:center;justify-content:center;gap:18px;padding:24px}.acdcgal__lightbox[hidden]{display:none}.acdcgal__big{width:min(70vw,66vh,620px);height:min(70vw,66vh,620px);object-fit:cover;border-radius:6px;box-shadow:0 24px 70px rgba(0,0,0,.55);background:#111}.acdcgal__close,.acdcgal__lbnav{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;border-radius:50%;cursor:pointer}.acdcgal__close{position:absolute;top:22px;right:22px;width:44px;height:44px;font-size:28px}.acdcgal__lbnav{width:52px;height:52px;font-size:36px;line-height:1}.acdcgal__counter{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);margin:0;color:rgba(255,255,255,.85);font-size:13px;font-weight:600;letter-spacing:.08em}@media(max-width:540px){.acdcgal__item{flex-basis:82%;scroll-snap-align:center}.acdcgal__arrow{width:40px;height:40px;font-size:28px}.acdcgal__prev{left:2px}.acdcgal__next{right:2px}.acdcgal__viewall{display:none}.acdcgal__big{width:min(86vw,60vh,460px);height:min(86vw,60vh,460px)}.acdcgal__lbnav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;font-size:28px;background:rgba(0,0,0,.45)}.acdcgal__lbprev{left:12px}.acdcgal__lbnext{right:12px}}@media(min-width:541px) and (max-width:900px){.acdcgal.is-expanded .acdcgal__track{grid-template-columns:repeat(3,1fr)}}';
+    document.head.appendChild(st);
+  }
+
+  target.innerHTML='<section class="acdcgal" id="'+uid+'"><div class="acdcgal__wrap"><p class="acdcgal__eyebrow">'+eyebrow+'</p><h2 class="acdcgal__title">'+title+'</h2><div class="acdcgal__stage"><button class="acdcgal__arrow acdcgal__prev" type="button" aria-label="Foto anterior">‹</button><div class="acdcgal__track" aria-live="polite"></div><button class="acdcgal__arrow acdcgal__next" type="button" aria-label="Próxima foto">›</button></div><button class="acdcgal__viewall" type="button">Ver todas as fotos</button></div><div class="acdcgal__lightbox" hidden><button class="acdcgal__close" type="button" aria-label="Fechar">×</button><button class="acdcgal__lbnav acdcgal__lbprev" type="button" aria-label="Imagem anterior">‹</button><img class="acdcgal__big" src="" alt=""><button class="acdcgal__lbnav acdcgal__lbnext" type="button" aria-label="Próxima imagem">›</button><p class="acdcgal__counter"></p></div></section>';
+
+  var root=document.getElementById(uid),track=root.querySelector('.acdcgal__track'),big=root.querySelector('.acdcgal__big'),lightbox=root.querySelector('.acdcgal__lightbox'),counter=root.querySelector('.acdcgal__counter'),view=root.querySelector('.acdcgal__viewall');
+  var photos=[],currentIndex=0;
+  function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function parse(t){return t.split('\n').map(function(l){return l.trim();}).filter(function(l){return l&&l.charAt(0)!=='#';}).map(function(l){var p=l.split('|');return{src:(p[0]||'').trim(),alt:(p.slice(1).join('|')||'Ambiente ACDC Casa').trim()};}).filter(function(x){return /^https?:\/\//i.test(x.src);});}
+  function render(){track.innerHTML='';if(!photos.length){track.innerHTML='<div class="acdcgal__msg">Nenhuma foto encontrada. Verifique o arquivo fotos.txt no GitHub.</div>';return;}photos.forEach(function(p,i){var b=document.createElement('button');b.type='button';b.className='acdcgal__item';b.setAttribute('aria-label','Ver imagem '+(i+1)+' de '+photos.length);b.innerHTML='<img src="'+esc(p.src)+'" alt="'+esc(p.alt)+'" loading="lazy">';b.onclick=function(){openLb(i);};track.appendChild(b);});}
+  function step(){var c=track.querySelector('.acdcgal__item');return c?c.getBoundingClientRect().width+(parseFloat(getComputedStyle(track).gap)||0):track.clientWidth;}
+  function openLb(i){if(!photos.length)return;currentIndex=(i+photos.length)%photos.length;big.src=photos[currentIndex].src;big.alt=photos[currentIndex].alt;counter.textContent=(currentIndex+1)+' / '+photos.length;lightbox.hidden=false;document.body.style.overflow='hidden';}
+  function closeLb(){lightbox.hidden=true;document.body.style.overflow='';}
+  root.querySelector('.acdcgal__prev').onclick=function(){track.scrollBy({left:-step()*2,behavior:'smooth'});};
+  root.querySelector('.acdcgal__next').onclick=function(){track.scrollBy({left:step()*2,behavior:'smooth'});};
+  root.querySelector('.acdcgal__lbprev').onclick=function(){openLb(currentIndex-1);};
+  root.querySelector('.acdcgal__lbnext').onclick=function(){openLb(currentIndex+1);};
+  root.querySelector('.acdcgal__close').onclick=closeLb;
+  lightbox.onclick=function(e){if(e.target===lightbox)closeLb();};
+  view.onclick=function(){var ex=root.classList.toggle('is-expanded');view.textContent=ex?'Ver como carrossel':'Ver todas as fotos';};
+  document.addEventListener('keydown',function(e){if(lightbox.hidden)return;if(e.key==='Escape')closeLb();if(e.key==='ArrowLeft')openLb(currentIndex-1);if(e.key==='ArrowRight')openLb(currentIndex+1);});
+  fetch(fotosUrl+'?v='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('erro '+r.status);return r.text();}).then(function(t){photos=parse(t);render();}).catch(function(err){track.innerHTML='<div class="acdcgal__msg">Não consegui carregar as fotos. Abra o console do navegador para ver o erro.</div>';console.error('Galeria ACDC:',err);});
+})();
