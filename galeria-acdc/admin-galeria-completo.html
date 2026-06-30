@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Galeria ACDC</title>
+  <style>
+    :root { --ink:#111; --muted:#666; --line:#ddd; --soft:#f7f7f7; --ok:#0b7a34; --err:#b00020; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial, sans-serif; background:#fff; color:var(--ink); }
+    main { max-width:1100px; margin:0 auto; padding:34px 18px 60px; }
+    h1 { margin:0 0 8px; font-size:clamp(28px,4vw,44px); line-height:1.05; text-transform:uppercase; letter-spacing:-.03em; }
+    p { color:var(--muted); line-height:1.55; }
+    label { display:block; margin:18px 0 7px; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    input, textarea { width:100%; border:1px solid var(--line); border-radius:10px; padding:13px; font:14px/1.45 Arial, sans-serif; }
+    textarea { min-height:280px; resize:vertical; font-family:Consolas, monospace; }
+    .card { border:1px solid var(--line); border-radius:16px; padding:18px; margin:18px 0; background:#fff; }
+    .hint { background:var(--soft); border:1px solid #e5e5e5; border-radius:14px; padding:14px; color:#444; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .bar { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0; }
+    button, a.btn { border:1px solid var(--ink); background:var(--ink); color:#fff; border-radius:999px; padding:12px 18px; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    button.secondary, a.secondary { background:#fff; color:var(--ink); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .status { min-height:24px; margin:12px 0; font-weight:700; }
+    .ok { color:var(--ok); }
+    .err { color:var(--err); }
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:16px; }
+    .photo { position:relative; border-radius:8px; overflow:hidden; background:#eee; aspect-ratio:1/1; }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo span { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.65); color:#fff; border-radius:999px; padding:4px 8px; font-size:11px; }
+    .small { font-size:12px; color:#777; }
+    code { background:#eee; padding:2px 5px; border-radius:5px; }
+    @media(max-width:760px){ .row{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)} }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Atualizar galeria ACDC</h1>
+  <p>Cole os links das fotos, visualize e salve. Ao salvar, este painel altera automaticamente o arquivo <code>fotos.txt</code> no GitHub.</p>
+
+  <div class="card">
+    <label for="token">Token do GitHub</label>
+    <input id="token" type="password" autocomplete="off" placeholder="Cole aqui seu token do GitHub com permissão de escrita no repositório">
+    <p class="small">O token não fica no código do site. Ele é usado apenas no seu navegador para gravar a alteração no GitHub.</p>
+    <label><input id="lembrar" type="checkbox" style="width:auto"> Lembrar token neste navegador</label>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Repositório</label>
+        <input id="repo" value="escalopicitas-code/Widgets-ACDC-">
+      </div>
+      <div>
+        <label>Arquivo da galeria</label>
+        <input id="path" value="galeria-acdc/fotos.txt">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Branch</label>
+        <input id="branch" value="main">
+      </div>
+      <div>
+        <label>Mensagem do salvamento</label>
+        <input id="message" value="Atualiza fotos da galeria ACDC">
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    <strong>Formato:</strong><br>
+    <code>https://site.com/foto.jpg</code><br>
+    ou<br>
+    <code>https://site.com/foto.jpg | Descrição da foto</code>
+  </div>
+
+  <label for="links">Links das fotos</label>
+  <textarea id="links" placeholder="Cole aqui os links das fotos, um por linha"></textarea>
+
+  <div class="bar">
+    <button type="button" id="carregar">Carregar fotos atuais</button>
+    <button type="button" id="extrair" class="secondary">Organizar links colados</button>
+    <button type="button" id="preview" class="secondary">Pré-visualizar</button>
+    <button type="button" id="salvar">Salvar galeria automaticamente</button>
+    <a class="btn secondary" target="_blank" rel="noopener" href="https://github.com/escalopicitas-code/Widgets-ACDC-/blob/main/galeria-acdc/fotos.txt">Ver fotos.txt</a>
+  </div>
+
+  <p id="status" class="status"></p>
+  <div id="grid" class="grid"></div>
+</main>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const tokenEl = $('token');
+  const lembrarEl = $('lembrar');
+  const linksEl = $('links');
+  const statusEl = $('status');
+  const gridEl = $('grid');
+
+  const savedToken = localStorage.getItem('acdc_github_token') || '';
+  if (savedToken) { tokenEl.value = savedToken; lembrarEl.checked = true; }
+
+  function setStatus(msg, type) {
+    statusEl.textContent = msg || '';
+    statusEl.className = 'status ' + (type || '');
+  }
+
+  function cfg() {
+    return {
+      token: tokenEl.value.trim(),
+      repo: $('repo').value.trim(),
+      path: $('path').value.trim(),
+      branch: $('branch').value.trim(),
+      message: $('message').value.trim() || 'Atualiza fotos da galeria ACDC'
+    };
+  }
+
+  function apiUrl(c) {
+    return 'https://api.github.com/repos/' + c.repo + '/contents/' + encodeURIComponent(c.path).replace(/%2F/g, '/') + '?ref=' + encodeURIComponent(c.branch);
+  }
+
+  function headers(c) {
+    return {
+      'Accept': 'application/vnd.github+json',
+      'Authorization': 'Bearer ' + c.token,
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+  }
+
+  function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function base64ToUtf8(str) {
+    return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
+  }
+
+  function extractUrls(text) {
+    const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    const result = [];
+    lines.forEach(line => {
+      if (line.includes('|')) {
+        const first = line.split('|')[0].trim();
+        if (/^https?:\/\//i.test(first)) result.push(line);
+        return;
+      }
+      const urls = line.match(/https?:\/\/[^\s"'<>]+/gi);
+      if (urls) urls.forEach(u => result.push(u.replace(/[),.;]+$/,'')));
+    });
+    return Array.from(new Set(result));
+  }
+
+  function normalizedContent() {
+    const lines = extractUrls(linksEl.value);
+    return '# Galeria ACDC Casa\n# Cole um link de foto por linha. Opcional: link | descrição\n\n' + lines.join('\n') + '\n';
+  }
+
+  function preview() {
+    const list = extractUrls(linksEl.value);
+    gridEl.textContent = '';
+    list.forEach((line, i) => {
+      const url = line.split('|')[0].trim();
+      const item = document.createElement('div');
+      item.className = 'photo';
+      item.innerHTML = '<img src="' + url.replace(/"/g, '&quot;') + '" alt=""><span>' + (i + 1) + '</span>';
+      gridEl.appendChild(item);
+    });
+    setStatus(list.length ? list.length + ' foto(s) pronta(s) para salvar.' : 'Cole pelo menos um link de foto.', list.length ? 'ok' : 'err');
+  }
+
+  async function loadCurrent() {
+    const c = cfg();
+    if (!c.token) { setStatus('Cole o token do GitHub primeiro.', 'err'); return; }
+    setStatus('Carregando fotos atuais...', '');
+    const res = await fetch(apiUrl(c), { headers: headers(c) });
+    if (!res.ok) throw new Error('Erro ao carregar: ' + res.status);
+    const data = await res.json();
+    linksEl.value = base64ToUtf8(data.content).replace(/^#.*$/gm, '').trim();
+    setStatus('Fotos atuais carregadas.', 'ok');
+    preview();
+  }
+
+  async function saveAuto() {
+    const c = cfg();
+    if (!c.token) { setStatus('Cole o token do GitHub primeiro.', 'err'); return; }
+    const list = extractUrls(linksEl.value);
+    if (!list.length) { setStatus('Cole pelo menos um link de foto antes de salvar.', 'err'); return; }
+
+    if (lembrarEl.checked) localStorage.setItem('acdc_github_token', c.token);
+    else localStorage.removeItem('acdc_github_token');
+
+    setStatus('Buscando versão atual do arquivo...', '');
+    const getRes = await fetch(apiUrl(c), { headers: headers(c) });
+    if (!getRes.ok) throw new Error('Não consegui ler o arquivo atual. Código: ' + getRes.status);
+    const currentFile = await getRes.json();
+
+    setStatus('Salvando no GitHub...', '');
+    const putRes = await fetch('https://api.github.com/repos/' + c.repo + '/contents/' + encodeURIComponent(c.path).replace(/%2F/g, '/'), {
+      method: 'PUT',
+      headers: Object.assign({'Content-Type':'application/json'}, headers(c)),
+      body: JSON.stringify({
+        message: c.message,
+        content: utf8ToBase64(normalizedContent()),
+        sha: currentFile.sha,
+        branch: c.branch
+      })
+    });
+
+    const answer = await putRes.json();
+    if (!putRes.ok) {
+      throw new Error((answer && answer.message) ? answer.message : 'Erro ao salvar no GitHub.');
+    }
+
+    setStatus('Galeria salva com sucesso. O site deve atualizar em instantes.', 'ok');
+    preview();
+  }
+
+  $('extrair').addEventListener('click', () => {
+    linksEl.value = extractUrls(linksEl.value).join('\n');
+    preview();
+  });
+  $('preview').addEventListener('click', preview);
+  $('carregar').addEventListener('click', () => loadCurrent().catch(e => setStatus(e.message, 'err')));
+  $('salvar').addEventListener('click', () => saveAuto().catch(e => setStatus(e.message, 'err')));
+})();
+</script>
+</body>
+</html>
