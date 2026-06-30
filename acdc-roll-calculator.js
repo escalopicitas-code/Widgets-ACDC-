@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/wallpaper-calculator.js << 'ENDOFFILE'
 (function () {
   if (window.__wallpaperCalcInit) return;
   window.__wallpaperCalcInit = true;
@@ -446,5 +445,3 @@ cat > /mnt/user-data/outputs/wallpaper-calculator.js << 'ENDOFFILE'
   // ─── Boot ─────────────────────────────────────────────────────────────
   if (d.readyState === 'complete') init(); else window.addEventListener('load', init);
 })();
-ENDOFFILE
-echo "✅ $(wc -l < /mnt/user-data/outputs/wallpaper-calculator.js) linhas"
