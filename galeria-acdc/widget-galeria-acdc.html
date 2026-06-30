@@ -1,0 +1,172 @@
+<section class="acdc-auto-gallery" data-fotos="https://raw.githubusercontent.com/escalopicitas-code/Widgets-ACDC-/main/galeria-acdc/fotos.txt">
+  <div class="acdc-auto-gallery__wrap">
+    <p class="acdc-auto-gallery__eyebrow">Portfólio completo</p>
+    <h2 class="acdc-auto-gallery__title">Galeria</h2>
+    <div class="acdc-auto-gallery__stage">
+      <button class="acdc-auto-gallery__arrow" data-dir="-1" type="button" aria-label="Foto anterior">‹</button>
+      <div class="acdc-auto-gallery__track" aria-live="polite"></div>
+      <button class="acdc-auto-gallery__arrow" data-dir="1" type="button" aria-label="Próxima foto">›</button>
+    </div>
+    <button class="acdc-auto-gallery__viewall" type="button">Ver todas as fotos</button>
+  </div>
+
+  <div class="acdc-auto-gallery__lightbox" hidden>
+    <button class="acdc-auto-gallery__close" type="button" aria-label="Fechar">×</button>
+    <button class="acdc-auto-gallery__lbnav" data-lbdir="-1" type="button" aria-label="Imagem anterior">‹</button>
+    <img class="acdc-auto-gallery__big" src="" alt="">
+    <button class="acdc-auto-gallery__lbnav" data-lbdir="1" type="button" aria-label="Próxima imagem">›</button>
+    <p class="acdc-auto-gallery__counter"></p>
+  </div>
+</section>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hammersmith+One&family=Open+Sans:wght@400;600&display=swap');
+
+  .acdc-auto-gallery {
+    --paper:#fff;
+    --ink:#111;
+    --muted:rgba(17,17,17,.6);
+    --line:rgba(17,17,17,.12);
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Open Sans',system-ui,sans-serif;
+    padding:clamp(3rem,8vh,6rem) clamp(1.25rem,5vw,3rem);
+  }
+  .acdc-auto-gallery * { box-sizing:border-box; }
+  .acdc-auto-gallery__wrap { max-width:1280px; margin:0 auto; }
+  .acdc-auto-gallery__eyebrow { margin:0 0 .6rem; font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+  .acdc-auto-gallery__title { margin:0 0 clamp(2rem,5vh,3rem); font-family:'Hammersmith One',sans-serif; font-size:clamp(2rem,5.5vw,3.6rem); font-weight:400; line-height:1.05; text-transform:uppercase; }
+  .acdc-auto-gallery__stage { position:relative; }
+  .acdc-auto-gallery__track { display:flex; gap:clamp(.75rem,2vw,1.25rem); overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; scrollbar-width:none; padding-bottom:4px; }
+  .acdc-auto-gallery__track::-webkit-scrollbar { display:none; }
+  .acdc-auto-gallery__item { position:relative; flex:0 0 calc((100% - 2 * clamp(.75rem,2vw,1.25rem)) / 2.4); aspect-ratio:1/1; border:0; padding:0; border-radius:4px; overflow:hidden; background:#eee; cursor:pointer; scroll-snap-align:start; }
+  .acdc-auto-gallery__item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s cubic-bezier(.16,1,.3,1); }
+  .acdc-auto-gallery__item:hover img { transform:scale(1.08); }
+  .acdc-auto-gallery__arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:2; width:48px; height:48px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92); color:var(--ink); box-shadow:0 6px 20px rgba(0,0,0,.1); cursor:pointer; font-size:32px; line-height:1; }
+  .acdc-auto-gallery__arrow[data-dir="-1"] { left:-10px; }
+  .acdc-auto-gallery__arrow[data-dir="1"] { right:-10px; }
+  .acdc-auto-gallery__arrow:hover { background:var(--ink); color:var(--paper); }
+  .acdc-auto-gallery__viewall { display:block; margin:clamp(1.5rem,3vh,2rem) auto 0; padding:11px 22px; border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--ink); font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .acdc-auto-gallery__viewall:hover { background:var(--ink); color:var(--paper); }
+  .acdc-auto-gallery.is-expanded .acdc-auto-gallery__track { display:grid; grid-template-columns:repeat(4,1fr); overflow:visible; scroll-snap-type:none; }
+  .acdc-auto-gallery.is-expanded .acdc-auto-gallery__item { flex:none; width:100%; }
+  .acdc-auto-gallery.is-expanded .acdc-auto-gallery__arrow { display:none; }
+  .acdc-auto-gallery__msg { width:100%; padding:22px; border:1px dashed var(--line); color:var(--muted); font-size:14px; }
+
+  .acdc-auto-gallery__lightbox { position:fixed; inset:0; z-index:2147483000; background:rgba(8,8,8,.88); display:flex; align-items:center; justify-content:center; gap:18px; padding:24px; }
+  .acdc-auto-gallery__lightbox[hidden] { display:none; }
+  .acdc-auto-gallery__big { width:min(70vw,66vh,620px); height:min(70vw,66vh,620px); object-fit:cover; border-radius:6px; box-shadow:0 24px 70px rgba(0,0,0,.55); background:#111; }
+  .acdc-auto-gallery__close, .acdc-auto-gallery__lbnav { border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.1); color:#fff; border-radius:50%; cursor:pointer; }
+  .acdc-auto-gallery__close { position:absolute; top:22px; right:22px; width:44px; height:44px; font-size:28px; }
+  .acdc-auto-gallery__lbnav { width:52px; height:52px; font-size:36px; line-height:1; }
+  .acdc-auto-gallery__counter { position:absolute; bottom:22px; left:50%; transform:translateX(-50%); margin:0; color:rgba(255,255,255,.85); font-size:13px; font-weight:600; letter-spacing:.08em; }
+
+  @media (max-width:540px) {
+    .acdc-auto-gallery__item { flex-basis:82%; scroll-snap-align:center; }
+    .acdc-auto-gallery__arrow { width:40px; height:40px; font-size:28px; }
+    .acdc-auto-gallery__arrow[data-dir="-1"] { left:2px; }
+    .acdc-auto-gallery__arrow[data-dir="1"] { right:2px; }
+    .acdc-auto-gallery__viewall { display:none; }
+    .acdc-auto-gallery__big { width:min(86vw,60vh,460px); height:min(86vw,60vh,460px); }
+    .acdc-auto-gallery__lbnav { position:absolute; top:50%; transform:translateY(-50%); width:40px; height:40px; font-size:28px; background:rgba(0,0,0,.45); }
+    .acdc-auto-gallery__lbnav[data-lbdir="-1"] { left:12px; }
+    .acdc-auto-gallery__lbnav[data-lbdir="1"] { right:12px; }
+  }
+  @media (min-width:541px) and (max-width:900px) { .acdc-auto-gallery.is-expanded .acdc-auto-gallery__track { grid-template-columns:repeat(3,1fr); } }
+</style>
+
+<script>
+(function(){
+  var section = document.currentScript.closest('.acdc-auto-gallery');
+  var track = section.querySelector('.acdc-auto-gallery__track');
+  var viewAll = section.querySelector('.acdc-auto-gallery__viewall');
+  var lightbox = section.querySelector('.acdc-auto-gallery__lightbox');
+  var big = section.querySelector('.acdc-auto-gallery__big');
+  var counter = section.querySelector('.acdc-auto-gallery__counter');
+  var photos = [];
+  var current = 0;
+
+  function parse(text) {
+    return text.split('\n').map(function(line){ return line.trim(); }).filter(function(line){ return line && line[0] !== '#'; }).map(function(line){
+      var parts = line.split('|');
+      return { src: parts[0].trim(), alt: (parts.slice(1).join('|').trim() || 'Ambiente ACDC Casa') };
+    }).filter(function(item){ return /^https?:\/\//i.test(item.src); });
+  }
+
+  function card(photo, index) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'acdc-auto-gallery__item';
+    btn.setAttribute('aria-label', 'Ver imagem ' + (index + 1) + ' de ' + photos.length);
+    var img = document.createElement('img');
+    img.src = photo.src;
+    img.alt = photo.alt;
+    img.loading = 'lazy';
+    btn.appendChild(img);
+    btn.addEventListener('click', function(){ open(index); });
+    return btn;
+  }
+
+  function render() {
+    track.textContent = '';
+    if (!photos.length) {
+      var msg = document.createElement('div');
+      msg.className = 'acdc-auto-gallery__msg';
+      msg.textContent = 'Nenhuma foto encontrada. Edite o arquivo fotos.txt no GitHub e cole os links das imagens.';
+      track.appendChild(msg);
+      return;
+    }
+    photos.forEach(function(photo, index){ track.appendChild(card(photo, index)); });
+  }
+
+  function step() {
+    var first = track.querySelector('.acdc-auto-gallery__item');
+    if (!first) return track.clientWidth;
+    var gap = parseFloat(getComputedStyle(track).gap || 0) || 0;
+    return first.getBoundingClientRect().width + gap;
+  }
+
+  function open(index) {
+    current = (index + photos.length) % photos.length;
+    big.src = photos[current].src;
+    big.alt = photos[current].alt;
+    counter.textContent = (current + 1) + ' / ' + photos.length;
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    lightbox.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  section.querySelectorAll('.acdc-auto-gallery__arrow').forEach(function(btn){
+    btn.addEventListener('click', function(){ track.scrollBy({ left: Number(btn.dataset.dir) * step() * 2, behavior: 'smooth' }); });
+  });
+
+  section.querySelectorAll('.acdc-auto-gallery__lbnav').forEach(function(btn){
+    btn.addEventListener('click', function(){ open(current + Number(btn.dataset.lbdir)); });
+  });
+
+  section.querySelector('.acdc-auto-gallery__close').addEventListener('click', close);
+  lightbox.addEventListener('click', function(e){ if (e.target === lightbox) close(); });
+  document.addEventListener('keydown', function(e){
+    if (lightbox.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') open(current - 1);
+    if (e.key === 'ArrowRight') open(current + 1);
+  });
+
+  viewAll.addEventListener('click', function(){
+    var expanded = section.classList.toggle('is-expanded');
+    viewAll.textContent = expanded ? 'Ver como carrossel' : 'Ver todas as fotos';
+  });
+
+  fetch(section.dataset.fotos + '?v=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.text(); })
+    .then(function(text){ photos = parse(text); render(); })
+    .catch(function(){
+      track.innerHTML = '<div class="acdc-auto-gallery__msg">Não consegui carregar o arquivo fotos.txt.</div>';
+    });
+})();
+</script>
