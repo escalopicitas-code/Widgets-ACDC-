@@ -475,6 +475,31 @@ input[name="quantity"]{
     return !!texto && texto.length <= 80;
   }
 
+  function desembrulharRotulosNegrito(box) {
+    var negritos = Array.prototype.slice.call(box.querySelectorAll('strong, b'));
+    var tagsInline = /^(SPAN|FONT|EM|I|U|SMALL)$/;
+
+    for (var i = 0; i < negritos.length; i++) {
+      var negrito = negritos[i];
+      if (!ehTituloNegrito(negrito) || !box.contains(negrito)) continue;
+
+      // O editor da Nuvemshop às vezes envolve o rótulo e seu valor em spans.
+      // Remove apenas esses invólucros de formatação, preservando todos os nós,
+      // textos, sinais, unidades e a ordem em que foram cadastrados.
+      var pai = negrito.parentNode;
+      while (pai && pai !== box && pai.tagName !== 'P' && tagsInline.test(pai.tagName)) {
+        var avo = pai.parentNode;
+        if (!avo) break;
+
+        while (pai.firstChild) {
+          avo.insertBefore(pai.firstChild, pai);
+        }
+        avo.removeChild(pai);
+        pai = negrito.parentNode;
+      }
+    }
+  }
+
   function separarParagrafosPorNegrito(box) {
     var ps = Array.prototype.slice.call(box.querySelectorAll('p'));
 
@@ -601,7 +626,15 @@ input[name="quantity"]{
       || document.querySelector('.user-content');
     if (!box) return;
 
+    desembrulharRotulosNegrito(box);
     separarParagrafosPorNegrito(box);
+
+    // Também aceita descrições salvas dentro de DIVs pelo editor, inclusive
+    // quando cada novo negrito marca o início do campo seguinte.
+    var grupos = Array.prototype.slice.call(box.querySelectorAll('div, section'));
+    for (var g = grupos.length - 1; g >= 0; g--) {
+      organizarDescricaoPlana(grupos[g]);
+    }
     organizarDescricaoPlana(box);
 
     var ps = box.querySelectorAll('p');
