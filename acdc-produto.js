@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V5 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V6 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -600,8 +600,8 @@ input[name="quantity"]{
     return null;
   }
 
-  function juntarValoresDeMedidasSeparados(box) {
-    var campos = box.querySelectorAll('p.acdc-campo--medidas');
+  function juntarValoresSeparados(box) {
+    var campos = box.querySelectorAll('p.acdc-campo');
 
     for (var i = 0; i < campos.length; i++) {
       var campo = campos[i];
@@ -619,13 +619,15 @@ input[name="quantity"]{
 
       if (!candidato) continue;
 
-      // Nunca captura o campo seguinte da ficha.
-      var proximoRotulo = candidato.matches('p.acdc-campo')
-        ? candidato.querySelector('.acdc-campo-label')
+      // Nunca captura o campo seguinte: qualquer novo negrito continua sendo
+      // tratado como o início de outro campo.
+      var proximoCampo = candidato.matches('p.acdc-campo')
+        ? candidato
+        : candidato.querySelector('p.acdc-campo');
+      var proximoRotulo = proximoCampo
+        ? proximoCampo.querySelector('.acdc-campo-label')
         : candidato.querySelector('strong, b');
-      if (proximoRotulo && tipoRotuloDaFicha(proximoRotulo.textContent) !== 'campo') {
-        continue;
-      }
+      if (proximoRotulo && ehTituloNegrito(proximoRotulo)) continue;
 
       while (candidato.firstChild) {
         conteudo.appendChild(candidato.firstChild);
@@ -769,9 +771,10 @@ input[name="quantity"]{
       p.setAttribute('data-acdc-campo', 'ok');
     }
 
-    // Alguns produtos antigos foram salvos com "Medida" em um DIV e o valor
-    // no DIV seguinte. Une os dois somente para layout, sem reescrever o texto.
-    juntarValoresDeMedidasSeparados(box);
+    // Alguns produtos antigos foram salvos com o título em um DIV e o valor
+    // no bloco seguinte. No computador, une todos esses campos para o texto
+    // começar na mesma linha; no celular o CSS mantém o valor abaixo.
+    juntarValoresSeparados(box);
   }
   /* ------------------------------------------ 3. AVISO DE DISPONIBILIDADE */
   function ehProdutoComAviso() {
