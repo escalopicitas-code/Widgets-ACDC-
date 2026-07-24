@@ -460,11 +460,63 @@ input[name="quantity"]{
       .replace(/[:.\s]+$/g, '')
       .replace(/\s+/g, ' ');
 
-    if (chave === 'material') return 'material';
-    if (chave === 'medida' || chave === 'medidas') return 'medidas';
-    if (chave === 'cor') return 'cor';
-    if (chave === 'obs' || chave === 'observacao' || chave === 'observacoes') return 'obs';
-    return '';
+    if (/^(material|materiais|composicao)$/.test(chave)) return 'material';
+    if (/^(medida|medidas|dimensao|dimensoes|tamanho|tamanhos)$/.test(chave)) return 'medidas';
+    if (/^(cor|cores)$/.test(chave)) return 'cor';
+    if (/^(obs|observacao|observacoes|nota|notas|informacao|informacoes)$/.test(chave)) return 'obs';
+    return 'campo';
+  }
+
+  function ehTituloNegrito(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.tagName !== 'STRONG' && el.tagName !== 'B') return false;
+
+    var texto = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+    return !!texto && texto.length <= 80;
+  }
+
+  function separarParagrafosPorNegrito(box) {
+    var ps = Array.prototype.slice.call(box.querySelectorAll('p'));
+
+    for (var i = 0; i < ps.length; i++) {
+      var pOriginal = ps[i];
+      if (!box.contains(pOriginal)) continue;
+
+      var filhos = Array.prototype.slice.call(pOriginal.childNodes);
+      var quantidadeTitulos = 0;
+      for (var f = 0; f < filhos.length; f++) {
+        if (ehTituloNegrito(filhos[f])) quantidadeTitulos++;
+      }
+      if (quantidadeTitulos <= 1) continue;
+
+      var fragmento = document.createDocumentFragment();
+      var pAtual = pOriginal.cloneNode(false);
+      var encontrouTitulo = false;
+
+      function adicionarAtual() {
+        if (!pAtual) return;
+        var texto = pAtual.textContent.replace(/\s+/g, '').trim();
+        var temElementoUtil = pAtual.querySelector(':scope > *:not(br)');
+        if (texto || temElementoUtil) fragmento.appendChild(pAtual);
+      }
+
+      for (var n = 0; n < filhos.length; n++) {
+        var no = filhos[n];
+        if (ehTituloNegrito(no)) {
+          adicionarAtual();
+          pAtual = pOriginal.cloneNode(false);
+          pAtual.appendChild(no);
+          encontrouTitulo = true;
+        } else {
+          pAtual.appendChild(no);
+        }
+      }
+      adicionarAtual();
+
+      if (encontrouTitulo && pOriginal.parentNode) {
+        pOriginal.parentNode.replaceChild(fragmento, pOriginal);
+      }
+    }
   }
 
   function limparQuebrasNasBordas(el) {
@@ -495,9 +547,7 @@ input[name="quantity"]{
 
     for (var i = 0; i < nos.length; i++) {
       var no = nos[i];
-      if (no.nodeType === 1
-        && (no.tagName === 'STRONG' || no.tagName === 'B')
-        && tipoRotuloDaFicha(no.textContent)) {
+      if (ehTituloNegrito(no)) {
         temRotuloDireto = true;
         break;
       }
@@ -518,8 +568,7 @@ input[name="quantity"]{
 
     for (var n = 0; n < nos.length; n++) {
       var atual = nos[n];
-      var tipo = atual.nodeType === 1
-        && (atual.tagName === 'STRONG' || atual.tagName === 'B')
+      var tipo = ehTituloNegrito(atual)
         ? tipoRotuloDaFicha(atual.textContent)
         : '';
 
@@ -552,6 +601,7 @@ input[name="quantity"]{
       || document.querySelector('.user-content');
     if (!box) return;
 
+    separarParagrafosPorNegrito(box);
     organizarDescricaoPlana(box);
 
     var ps = box.querySelectorAll('p');
@@ -561,7 +611,7 @@ input[name="quantity"]{
       if (p.getAttribute('data-acdc-campo') === 'ok') continue;
 
       var forte = p.querySelector('strong, b');
-      var tipo = forte ? tipoRotuloDaFicha(forte.textContent) : '';
+      var tipo = ehTituloNegrito(forte) ? tipoRotuloDaFicha(forte.textContent) : '';
       if (!forte || !tipo) continue;
 
       // Quando os dois-pontos ficaram fora do negrito no editor, eles ainda
