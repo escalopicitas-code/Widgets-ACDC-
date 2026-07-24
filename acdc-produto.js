@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V9 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V10 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -198,6 +198,122 @@
 }
 #btn-installments:hover{ color:var(--acdc-ouro) !important; }
 #btn-installments .icon-inline{ width:13px !important; height:13px !important; stroke:currentColor !important; }
+
+/* ══ 4B. CABEÇALHO + PREÇO — acabamento alto padrão ════════════════════ */
+#single-product [data-store^="product-info-"] .page-header{
+  margin:0 0 22px 0 !important;
+  padding:0 !important;
+}
+#single-product .breadcrumbs{
+  display:flex !important; align-items:center !important; flex-wrap:wrap !important;
+  gap:0 !important; margin:0 0 18px 0 !important; padding:0 !important;
+}
+#single-product .breadcrumbs .crumb{
+  color:var(--acdc-suave) !important;
+  font-size:9.5px !important; font-weight:500 !important;
+  line-height:1.4 !important; letter-spacing:.12em !important;
+  text-decoration:none !important; text-transform:uppercase !important;
+  transition:color .2s ease !important;
+}
+#single-product .breadcrumbs a.crumb:hover{ color:var(--acdc-ouro) !important; }
+#single-product .breadcrumbs .separator{
+  color:var(--acdc-ouro) !important;
+  font-size:9px !important; margin:0 8px !important;
+}
+#single-product .breadcrumbs .crumb.active{
+  color:var(--acdc-fraco) !important; font-weight:400 !important;
+}
+#single-product .page-header .js-product-name{
+  max-width:560px !important;
+  margin:0 !important;
+  color:var(--acdc-tinta) !important;
+  font-family:var(--acdc-fonte) !important;
+  font-size:clamp(28px,2.25vw,34px) !important;
+  font-weight:400 !important;
+  line-height:1.16 !important;
+  letter-spacing:.025em !important;
+}
+#single-product .price-container{
+  margin:0 !important; padding:0 !important;
+}
+#single-product .price-container > .mb-3{
+  margin:0 !important;
+}
+#single-product .price-container #price_display,
+#single-product .price-container > div > span > .js-price-display{
+  color:var(--acdc-tinta) !important;
+  font-family:var(--acdc-fonte) !important;
+  font-size:27px !important;
+  font-weight:400 !important;
+  line-height:1.15 !important;
+  letter-spacing:.01em !important;
+}
+#single-product .payment-discount-price-product-container{
+  display:flex !important; align-items:baseline !important; flex-wrap:wrap !important;
+  gap:4px !important; margin:9px 0 0 0 !important;
+  color:var(--acdc-suave) !important;
+  font-size:11px !important; font-weight:500 !important;
+  letter-spacing:.08em !important; text-transform:uppercase !important;
+}
+#single-product .payment-discount-price-product-container .payment-discount-price-product{
+  color:var(--acdc-tinta) !important;
+  font-size:17px !important; font-weight:600 !important;
+  line-height:1.2 !important; letter-spacing:.01em !important;
+}
+#single-product .payment-discount-price-product-container .js-payment-discount-name-product{
+  color:var(--acdc-tinta) !important; font-weight:600 !important;
+}
+#single-product .js-product-payments-container{
+  width:100% !important; max-width:100% !important; flex:0 0 100% !important;
+  margin:22px 0 24px 0 !important; padding:17px 0 16px 0 !important;
+  border-top:1px solid var(--acdc-linha) !important;
+  border-bottom:1px solid var(--acdc-linha) !important;
+}
+#single-product .js-product-payments-container .js-max-installments-container{
+  margin:0 0 15px 0 !important;
+}
+#single-product .js-product-payments-container .product-installments{
+  display:flex !important; align-items:baseline !important; flex-wrap:wrap !important;
+  gap:5px !important;
+}
+#single-product .js-product-payments-container .js-installment-amount{
+  color:var(--acdc-tinta) !important; font-size:14px !important; font-weight:700 !important;
+}
+#single-product .js-product-payments-container .js-installment-price{
+  color:var(--acdc-tinta) !important; font-size:14px !important; font-weight:600 !important;
+}
+#single-product .js-product-payments-container .product-installments > span:not([class]){
+  color:var(--acdc-suave) !important;
+  font-size:10px !important; font-weight:500 !important;
+  letter-spacing:.09em !important; text-transform:uppercase !important;
+}
+#single-product .js-product-payments-container .product-installments > span:last-child{
+  color:var(--acdc-ouro) !important;
+}
+#single-product .js-product-payments-container .js-product-discount-container{
+  margin:0 !important; padding:15px 0 0 0 !important;
+}
+#single-product .js-product-payments-container .js-product-discount-container .text-accent{
+  color:var(--acdc-tinta) !important; font-size:12px !important; font-weight:600 !important;
+}
+#single-product .js-product-payments-container .js-product-discount-container{
+  color:var(--acdc-texto) !important; font-size:12px !important;
+}
+#single-product .js-product-payments-container .js-product-discount-disclaimer{
+  color:var(--acdc-fraco) !important;
+  font-size:9px !important; letter-spacing:.13em !important;
+}
+#single-product .js-product-payments-container #btn-installments{
+  display:inline-flex !important; align-items:center !important; gap:8px !important;
+  width:max-content !important; margin:15px 0 0 0 !important; padding:9px 12px !important;
+  color:var(--acdc-tinta) !important; background:#fff !important;
+  border:1px solid var(--acdc-tinta) !important;
+  font-size:9px !important; font-weight:600 !important; letter-spacing:.17em !important;
+  transition:color .2s ease,border-color .2s ease !important;
+}
+#single-product .js-product-payments-container #btn-installments:hover{
+  color:var(--acdc-ouro) !important; border-color:var(--acdc-ouro) !important;
+}
 
 /* ══ 5. ESTOQUE ═════════════════════════════════════════════════════════ */
 .product-stock-message,.js-product-stock-message,.product-last-items{
@@ -454,7 +570,12 @@ input[name="quantity"]{
 
 /* ══ 11. MOBILE ═════════════════════════════════════════════════════════ */
 @media (max-width:576px){
-  #single-product h1,.product-name{ font-size:1.3rem !important; letter-spacing:.02em !important; }
+  #single-product h1,.product-name{ font-size:26px !important; letter-spacing:.02em !important; }
+  #single-product .breadcrumbs{ margin-bottom:14px !important; }
+  #single-product .breadcrumbs .crumb.active{ display:none !important; }
+  #single-product .breadcrumbs .separator:last-of-type{ display:none !important; }
+  #single-product .price-container #price_display{ font-size:25px !important; }
+  #single-product .js-product-payments-container{ margin:18px 0 20px 0 !important; }
   [data-store^="product-description"] .user-content p.acdc-campo{
     grid-template-columns:1fr !important;
     row-gap:6px !important;
