@@ -392,13 +392,9 @@ input[name="quantity"]{
 }
 .acdc-medida{ display:inline; }
 .acdc-medida:not(:last-child)::after{
-  content:" · ";
-  color:var(--acdc-fraco);
+  content:" | ";
+  color:inherit;
   padding:0 5px;
-}
-.acdc-medida strong{
-  font-weight:500;
-  color:var(--acdc-tinta);
 }
 .acdc-nota{
   border-left:2px solid var(--acdc-ouro); padding:2px 0 2px 14px;
@@ -475,7 +471,7 @@ input[name="quantity"]{
       if (unidade && valor.toLowerCase().indexOf(unidade.toLowerCase()) === -1) {
         valor += ' ' + unidade;
       }
-      itens.push('<span class="acdc-medida"><strong>' + label + ':</strong> ' + valor + '</span>');
+      itens.push('<span class="acdc-medida">' + label + ': ' + valor + '</span>');
     }
     return '<div class="acdc-medidas">' + itens.join('') + '</div>';
   }
@@ -1688,4 +1684,3 @@ input[name="quantity"]{
     });
   }
 })();
-
