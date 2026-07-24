@@ -366,43 +366,44 @@ input[name="quantity"]{
 /* ══ 9. DESCRIÇÃO — ficha técnica ═══════════════════════════════════════ */
 [data-store^="product-description"] h6,
 .acdc-desc-titulo{
-  font-size:10px !important; font-weight:600 !important;
-  letter-spacing:.2em !important; text-transform:uppercase !important;
-  color:var(--acdc-fraco) !important; margin:0 0 18px 0 !important;
+  font-size:11px !important; font-weight:600 !important;
+  letter-spacing:.14em !important; text-transform:uppercase !important;
+  color:var(--acdc-suave) !important; margin:0 0 20px 0 !important;
 }
-.acdc-specs{ border-top:1px solid var(--acdc-linha); margin-bottom:22px; }
+.acdc-specs{ border-top:1px solid var(--acdc-linha); margin-bottom:26px; }
 .acdc-spec{
-  display:grid; grid-template-columns:112px 1fr; gap:0 28px;
-  padding:15px 0; border-bottom:1px solid var(--acdc-linha);
+  display:grid; grid-template-columns:160px minmax(0,1fr); gap:0 16px;
+  align-items:start; padding:19px 0; border-bottom:1px solid var(--acdc-linha);
 }
 .acdc-spec-label{
-  font-size:9px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--acdc-fraco); padding-top:4px;
+  font-size:10.5px; font-weight:600; line-height:1.45;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--acdc-suave); padding-top:4px;
 }
 .acdc-spec-valor{
-  font-size:13.5px; line-height:1.7; color:var(--acdc-texto);
-  font-weight:400; letter-spacing:.01em;
+  max-width:1080px; font-size:15.5px; line-height:1.65;
+  color:var(--acdc-texto); font-weight:400; letter-spacing:0;
 }
 .acdc-spec-valor strong{ font-weight:500; color:var(--acdc-tinta); }
 .acdc-medidas{
-  display:block;
-  font-size:13.5px;
-  line-height:1.8;
-  color:var(--acdc-texto);
+  display:flex; flex-wrap:wrap; align-items:baseline;
+  gap:4px 0; font:inherit; color:inherit;
 }
-.acdc-medida{ display:inline; }
+.acdc-medida{ display:inline-flex; align-items:baseline; white-space:nowrap; }
 .acdc-medida:not(:last-child)::after{
-  content:" | ";
-  color:inherit;
-  padding:0 5px;
+  content:"|"; color:var(--acdc-fraco); margin:0 12px;
 }
 .acdc-nota{
-  border-left:2px solid var(--acdc-ouro); padding:2px 0 2px 14px;
-  font-size:12px; line-height:1.6; color:var(--acdc-suave);
-  margin:0 0 20px 0; letter-spacing:.01em;
+  border-left:2px solid var(--acdc-ouro); padding:3px 0 3px 16px;
+  font-size:14.5px; line-height:1.65; color:var(--acdc-texto);
+  margin:0; letter-spacing:0;
 }
+.acdc-spec--nota .acdc-spec-label{ color:var(--acdc-ouro); }
 .acdc-nota strong{ color:var(--acdc-tinta); font-weight:500; }
-.acdc-desc-livre{ font-size:13.5px; line-height:1.75; color:var(--acdc-texto); margin:0 0 14px 0; }
+.acdc-desc-livre{
+  max-width:1080px; font-size:15.5px; line-height:1.65;
+  color:var(--acdc-texto); margin:0 0 16px 0;
+}
 
 /* ══ 10. COMPARTILHAR ═══════════════════════════════════════════════════ */
 .social-share .btn-link,
@@ -417,8 +418,11 @@ input[name="quantity"]{
 /* ══ 11. MOBILE ═════════════════════════════════════════════════════════ */
 @media (max-width:576px){
   #single-product h1,.product-name{ font-size:1.3rem !important; letter-spacing:.02em !important; }
-  .acdc-spec{ grid-template-columns:1fr; gap:7px; padding:14px 0; }
+  .acdc-spec{ grid-template-columns:1fr; gap:8px; padding:17px 0; }
   .acdc-spec-label{ padding-top:0; }
+  .acdc-spec-valor{ font-size:15px; line-height:1.6; }
+  .acdc-medida:not(:last-child)::after{ margin:0 8px; }
+  .acdc-nota{ font-size:14px; padding-left:12px; }
   #${CFG.idAviso}{ flex-wrap:wrap; padding:10px 12px; gap:9px; }
   #${CFG.idAviso} .acdc-aviso-texto{ font-size:11px; flex:1 1 100%; order:2; }
   #${CFG.idAviso} a{ order:3; margin-left:auto; }
@@ -452,6 +456,45 @@ input[name="quantity"]{
   }
 
   /* -------------------------------------------------- 2. FICHA DA DESCRIÇÃO */
+  function separarRotulo(texto) {
+    var original = String(texto || '').replace(/\s+/g, ' ').trim();
+    var chave = normalizar(original);
+    var regras = [
+      { nomes: ['curadoria acdc casa'], label: 'Curadoria ACDC Casa' },
+      { nomes: ['observacoes', 'observacao', 'obs.', 'obs'], label: 'Observação' },
+      { nomes: ['dimensoes', 'dimensao', 'medidas', 'medida'], label: 'Medidas' },
+      { nomes: ['acabamentos', 'acabamento'], label: 'Acabamento' },
+      { nomes: ['composicao', 'material'], label: 'Material' },
+      { nomes: ['cores', 'cor'], label: 'Cor' }
+    ];
+
+    for (var r = 0; r < regras.length; r++) {
+      for (var n = 0; n < regras[r].nomes.length; n++) {
+        var nome = regras[r].nomes[n];
+        if (chave === nome || chave.indexOf(nome + ':') === 0) {
+          return {
+            label: regras[r].label,
+            sobra: original.slice(nome.length).replace(/^[\s:–—-]+/, '').trim()
+          };
+        }
+      }
+    }
+
+    return {
+      label: original.replace(/[:\s]+$/, '').trim(),
+      sobra: ''
+    };
+  }
+
+  function juntarSobraAoValor(sobra, valor) {
+    if (!sobra) return valor;
+    var textoValor = String(valor || '').replace(/<[^>]*>/g, '').trim();
+    var ehFragmento = sobra.length <= 2
+      && /[A-Za-zÀ-ÿ]$/.test(sobra)
+      && /^[a-zà-ÿ]/.test(textoValor);
+    return sobra + (ehFragmento ? '' : ' ') + valor;
+  }
+
   function formatarMedidas(html) {
     var texto = html.replace(/<[^>]*>/g, '').trim();
     if (texto.indexOf('|') === -1) return null;
@@ -489,7 +532,6 @@ input[name="quantity"]{
     if (!ps.length) return;
 
     var specs = [];
-    var notas = [];
     var livres = [];
 
     for (var j = 0; j < ps.length; j++) {
@@ -502,11 +544,13 @@ input[name="quantity"]{
         continue;
       }
 
-      var label = forte.textContent.replace(/[:\s]+$/, '').trim();
+      var rotulo = separarRotulo(forte.textContent);
+      var label = rotulo.label;
       var clone = p.cloneNode(true);
       var cf = clone.querySelector('strong, b');
       if (cf) cf.parentNode.removeChild(cf);
       var valor = clone.innerHTML.replace(/^(\s|&nbsp;|:|–|-)+/, '').trim();
+      valor = juntarSobraAoValor(rotulo.sobra, valor);
 
       // Label sozinho no parágrafo: o valor está nos parágrafos seguintes
       if (!valor) {
@@ -520,16 +564,18 @@ input[name="quantity"]{
       if (!valor) continue;
 
       var chaveNota = normalizar(label);
-      if (chaveNota === 'obs' || chaveNota === 'observacao' || chaveNota === 'observacoes') {
-        notas.push(valor);
-        continue;
-      }
-
-      var medidas = formatarMedidas(valor);
-      specs.push({ label: label, valor: medidas || valor });
+      var ehNota = chaveNota === 'obs'
+        || chaveNota === 'observacao'
+        || chaveNota === 'observacoes';
+      var medidas = ehNota ? null : formatarMedidas(valor);
+      specs.push({
+        label: label,
+        valor: medidas || valor,
+        nota: ehNota
+      });
     }
 
-    if (!specs.length && !notas.length) return;
+    if (!specs.length) return;
 
     var html = '';
     if (livres.length) {
@@ -540,15 +586,13 @@ input[name="quantity"]{
     if (specs.length) {
       html += '<div class="acdc-specs">';
       for (var s = 0; s < specs.length; s++) {
-        html += '<div class="acdc-spec">' +
+        html += '<div class="acdc-spec' + (specs[s].nota ? ' acdc-spec--nota' : '') + '">' +
           '<span class="acdc-spec-label">' + specs[s].label + '</span>' +
-          '<div class="acdc-spec-valor">' + specs[s].valor + '</div>' +
+          '<div class="acdc-spec-valor' + (specs[s].nota ? ' acdc-nota' : '') + '">' +
+          specs[s].valor + '</div>' +
           '</div>';
       }
       html += '</div>';
-    }
-    for (var n = 0; n < notas.length; n++) {
-      html += '<p class="acdc-nota">' + notas[n] + '</p>';
     }
 
     box.innerHTML = html;
