@@ -363,46 +363,18 @@ input[name="quantity"]{
 }
 #${CFG.idAviso} a:hover{ color:var(--acdc-ouro); border-color:var(--acdc-ouro); }
 
-/* ══ 9. DESCRIÇÃO — ficha técnica ═══════════════════════════════════════ */
-[data-store^="product-description"] h6,
-.acdc-desc-titulo{
-  font-size:11px !important; font-weight:600 !important;
-  letter-spacing:.14em !important; text-transform:uppercase !important;
-  color:var(--acdc-suave) !important; margin:0 0 20px 0 !important;
+/* ══ 9. DESCRIÇÃO — preserva o conteúdo cadastrado ═════════════════════ */
+[data-store^="product-description"] .user-content p.acdc-campo{
+  margin-top:0 !important;
+  margin-bottom:14px !important;
 }
-.acdc-specs{ border-top:1px solid var(--acdc-linha); margin-bottom:26px; }
-.acdc-spec{
-  display:grid; grid-template-columns:160px minmax(0,1fr); gap:0 16px;
-  align-items:start; padding:19px 0; border-bottom:1px solid var(--acdc-linha);
-}
-.acdc-spec-label{
-  font-size:10.5px; font-weight:600; line-height:1.45;
-  letter-spacing:.1em; text-transform:uppercase;
-  color:var(--acdc-suave); padding-top:4px;
-}
-.acdc-spec-valor{
-  max-width:1080px; font-size:15.5px; line-height:1.65;
-  color:var(--acdc-texto); font-weight:400; letter-spacing:0;
-}
-.acdc-spec-valor strong{ font-weight:500; color:var(--acdc-tinta); }
-.acdc-medidas{
-  display:flex; flex-wrap:wrap; align-items:baseline;
-  gap:4px 0; font:inherit; color:inherit;
-}
-.acdc-medida{ display:inline-flex; align-items:baseline; white-space:nowrap; }
-.acdc-medida:not(:last-child)::after{
-  content:"|"; color:var(--acdc-fraco); margin:0 12px;
-}
-.acdc-nota{
-  border-left:2px solid var(--acdc-ouro); padding:3px 0 3px 16px;
-  font-size:14.5px; line-height:1.65; color:var(--acdc-texto);
-  margin:0; letter-spacing:0;
-}
-.acdc-spec--nota .acdc-spec-label{ color:var(--acdc-ouro); }
-.acdc-nota strong{ color:var(--acdc-tinta); font-weight:500; }
-.acdc-desc-livre{
-  max-width:1080px; font-size:15.5px; line-height:1.65;
-  color:var(--acdc-texto); margin:0 0 16px 0;
+[data-store^="product-description"] .acdc-campo-label{
+  display:inline !important;
+  color:inherit !important;
+  font:inherit !important;
+  font-weight:600 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
 }
 
 /* ══ 10. COMPARTILHAR ═══════════════════════════════════════════════════ */
@@ -418,11 +390,7 @@ input[name="quantity"]{
 /* ══ 11. MOBILE ═════════════════════════════════════════════════════════ */
 @media (max-width:576px){
   #single-product h1,.product-name{ font-size:1.3rem !important; letter-spacing:.02em !important; }
-  .acdc-spec{ grid-template-columns:1fr; gap:8px; padding:17px 0; }
-  .acdc-spec-label{ padding-top:0; }
-  .acdc-spec-valor{ font-size:15px; line-height:1.6; }
-  .acdc-medida:not(:last-child)::after{ margin:0 8px; }
-  .acdc-nota{ font-size:14px; padding-left:12px; }
+  [data-store^="product-description"] .user-content p.acdc-campo{ margin-bottom:12px !important; }
   #${CFG.idAviso}{ flex-wrap:wrap; padding:10px 12px; gap:9px; }
   #${CFG.idAviso} .acdc-aviso-texto{ font-size:11px; flex:1 1 100%; order:2; }
   #${CFG.idAviso} a{ order:3; margin-left:auto; }
@@ -455,150 +423,41 @@ input[name="quantity"]{
     }
   }
 
-  /* -------------------------------------------------- 2. FICHA DA DESCRIÇÃO */
-  function separarRotulo(texto) {
-    var original = String(texto || '').replace(/\s+/g, ' ').trim();
-    var chave = normalizar(original);
-    var regras = [
-      { nomes: ['curadoria acdc casa'], label: 'Curadoria ACDC Casa' },
-      { nomes: ['observacoes', 'observacao', 'obs.', 'obs'], label: 'Observação' },
-      { nomes: ['dimensoes', 'dimensao', 'medidas', 'medida'], label: 'Medidas' },
-      { nomes: ['acabamentos', 'acabamento'], label: 'Acabamento' },
-      { nomes: ['composicao', 'material'], label: 'Material' },
-      { nomes: ['cores', 'cor'], label: 'Cor' }
-    ];
+  /* -------------------------------------- 2. ORGANIZAR CAMPOS DA DESCRIÇÃO */
+  function ehRotuloDaFicha(texto) {
+    var chave = normalizar(texto)
+      .replace(/[:.\s]+$/g, '')
+      .replace(/\s+/g, ' ');
 
-    for (var r = 0; r < regras.length; r++) {
-      for (var n = 0; n < regras[r].nomes.length; n++) {
-        var nome = regras[r].nomes[n];
-        if (chave === nome || chave.indexOf(nome + ':') === 0) {
-          return {
-            label: regras[r].label,
-            sobra: original.slice(nome.length).replace(/^[\s:–—-]+/, '').trim()
-          };
-        }
-      }
-    }
-
-    return {
-      label: original.replace(/[:\s]+$/, '').trim(),
-      sobra: ''
-    };
+    return [
+      'material',
+      'medida',
+      'medidas',
+      'cor',
+      'obs',
+      'observacao',
+      'observacoes'
+    ].indexOf(chave) !== -1;
   }
 
-  function juntarSobraAoValor(sobra, valor) {
-    if (!sobra) return valor;
-    var textoValor = String(valor || '').replace(/<[^>]*>/g, '').trim();
-    var ehFragmento = sobra.length <= 2
-      && /[A-Za-zÀ-ÿ]$/.test(sobra)
-      && /^[a-zà-ÿ]/.test(textoValor);
-    return sobra + (ehFragmento ? '' : ' ') + valor;
-  }
-
-  function formatarMedidas(html) {
-    var texto = html.replace(/<[^>]*>/g, '').trim();
-    if (texto.indexOf('|') === -1) return null;
-
-    var partes = texto.split('|');
-    var unidade = '';
-    var m = texto.match(/(cm|mm|m)\s*$/i);
-    if (m) unidade = m[1];
-
-    var itens = [];
-    for (var i = 0; i < partes.length; i++) {
-      var p = partes[i].trim();
-      var idx = p.indexOf(':');
-      if (idx === -1) return null;
-      var label = p.slice(0, idx).trim();
-      var valor = p.slice(idx + 1).trim();
-      if (unidade && valor.toLowerCase().indexOf(unidade.toLowerCase()) === -1) {
-        valor += ' ' + unidade;
-      }
-      itens.push('<span class="acdc-medida">' + label + ': ' + valor + '</span>');
-    }
-    return '<div class="acdc-medidas">' + itens.join('') + '</div>';
-  }
-
-  function formatarDescricao() {
+  function organizarDescricao() {
     var box = document.querySelector('[data-store^="product-description"] .user-content')
       || document.querySelector('.user-content');
-    if (!box || box.getAttribute('data-acdc') === 'ok') return;
+    if (!box) return;
 
-    var filhos = box.children;
-    var ps = [];
-    for (var i = 0; i < filhos.length; i++) {
-      if (filhos[i].tagName === 'P') ps.push(filhos[i]);
-    }
-    if (!ps.length) return;
+    var ps = box.querySelectorAll('p');
+    for (var i = 0; i < ps.length; i++) {
+      var p = ps[i];
+      if (p.getAttribute('data-acdc-campo') === 'ok') continue;
 
-    var specs = [];
-    var livres = [];
-
-    for (var j = 0; j < ps.length; j++) {
-      var p = ps[j];
       var forte = p.querySelector('strong, b');
+      if (!forte || !ehRotuloDaFicha(forte.textContent)) continue;
 
-      if (!forte) {
-        var txt = p.textContent.trim();
-        if (txt) livres.push(p.innerHTML);
-        continue;
-      }
-
-      var rotulo = separarRotulo(forte.textContent);
-      var label = rotulo.label;
-      var clone = p.cloneNode(true);
-      var cf = clone.querySelector('strong, b');
-      if (cf) cf.parentNode.removeChild(cf);
-      var valor = clone.innerHTML.replace(/^(\s|&nbsp;|:|–|-)+/, '').trim();
-      valor = juntarSobraAoValor(rotulo.sobra, valor);
-
-      // Label sozinho no parágrafo: o valor está nos parágrafos seguintes
-      if (!valor) {
-        var acumulado = [];
-        while (j + 1 < ps.length && !ps[j + 1].querySelector('strong, b')) {
-          acumulado.push(ps[j + 1].innerHTML.trim());
-          j++;
-        }
-        valor = acumulado.join('<br>');
-      }
-      if (!valor) continue;
-
-      var chaveNota = normalizar(label);
-      var ehNota = chaveNota === 'obs'
-        || chaveNota === 'observacao'
-        || chaveNota === 'observacoes';
-      var medidas = ehNota ? null : formatarMedidas(valor);
-      specs.push({
-        label: label,
-        valor: medidas || valor,
-        nota: ehNota
-      });
+      p.classList.add('acdc-campo');
+      forte.classList.add('acdc-campo-label');
+      p.setAttribute('data-acdc-campo', 'ok');
     }
-
-    if (!specs.length) return;
-
-    var html = '';
-    if (livres.length) {
-      for (var l = 0; l < livres.length; l++) {
-        html += '<p class="acdc-desc-livre">' + livres[l] + '</p>';
-      }
-    }
-    if (specs.length) {
-      html += '<div class="acdc-specs">';
-      for (var s = 0; s < specs.length; s++) {
-        html += '<div class="acdc-spec' + (specs[s].nota ? ' acdc-spec--nota' : '') + '">' +
-          '<span class="acdc-spec-label">' + specs[s].label + '</span>' +
-          '<div class="acdc-spec-valor' + (specs[s].nota ? ' acdc-nota' : '') + '">' +
-          specs[s].valor + '</div>' +
-          '</div>';
-      }
-      html += '</div>';
-    }
-
-    box.innerHTML = html;
-    box.setAttribute('data-acdc', 'ok');
   }
-
   /* ------------------------------------------ 3. AVISO DE DISPONIBILIDADE */
   function ehProdutoComAviso() {
     if (normalizar(window.location.pathname).indexOf('/produtos/') === -1) return false;
@@ -682,7 +541,7 @@ input[name="quantity"]{
   function aplicar() {
     injetarCSS();
     reordenarPagamentos();
-    formatarDescricao();
+    organizarDescricao();
     instalarAviso();
   }
 
