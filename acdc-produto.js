@@ -1,3 +1,8 @@
+/* ACDC CASA — VERSÃO COMPLETA V2 — 24/07/2026
+   Inclui produto, medidas em linha, transição, calculadora,
+   voltar ao topo e produtos sem preço/sob consulta.
+*/
+
 /* =========================================================================
    ACDC CASA — PÁGINA DE PRODUTO (arquivo único)
    v1.1
@@ -1683,3 +1688,4 @@ input[name="quantity"]{
     });
   }
 })();
+
