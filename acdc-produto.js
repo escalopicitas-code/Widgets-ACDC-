@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V8 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V9 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -362,14 +362,16 @@ input[name="quantity"]{
   display:flex; align-items:center; gap:12px;
   width:100%; box-sizing:border-box;
   min-height:54px; margin:16px 0 0 0; padding:0 0 0 14px;
-  border:1px solid var(--acdc-linha); border-left:2px solid var(--acdc-ouro);
+  border:1px solid var(--acdc-linha); border-left:2px solid var(--acdc-preto);
   background:#fff; color:var(--acdc-tinta);
   font-family:var(--acdc-fonte); line-height:1.4;
+  transition:border-color .2s ease;
 }
 #${CFG.idAviso} .acdc-aviso-icone{
   display:flex; flex:0 0 16px; align-items:center; justify-content:center;
-  width:16px; height:16px; border:1px solid var(--acdc-ouro);
-  color:var(--acdc-ouro); font-size:10px; font-weight:700; line-height:1;
+  width:16px; height:16px; border:1px solid var(--acdc-preto);
+  color:var(--acdc-preto); font-size:10px; font-weight:700; line-height:1;
+  transition:color .2s ease,border-color .2s ease;
 }
 #${CFG.idAviso} .acdc-aviso-texto{
   flex:1 1 auto; min-width:0; font-size:11.5px; color:var(--acdc-texto);
@@ -384,6 +386,10 @@ input[name="quantity"]{
   transition:color .2s ease,background .2s ease;
 }
 #${CFG.idAviso} a:hover{ color:var(--acdc-preto); background:var(--acdc-ouro); }
+#${CFG.idAviso}:hover{ border-left-color:var(--acdc-ouro); }
+#${CFG.idAviso}:hover .acdc-aviso-icone{
+  color:var(--acdc-ouro); border-color:var(--acdc-ouro);
+}
 
 /* ══ 9. DESCRIÇÃO — preserva o conteúdo cadastrado ═════════════════════ */
 [data-store^="product-description"] .user-content p.acdc-campo{
