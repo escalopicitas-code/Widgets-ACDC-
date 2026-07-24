@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V2 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V3 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -412,8 +412,8 @@ input[name="quantity"]{
 @media (max-width:576px){
   #single-product h1,.product-name{ font-size:1.3rem !important; letter-spacing:.02em !important; }
   [data-store^="product-description"] .user-content p.acdc-campo{
-    grid-template-columns:1fr !important;
-    row-gap:6px !important;
+    grid-template-columns:82px minmax(0,1fr) !important;
+    column-gap:12px !important;
     padding:14px 0 !important;
   }
   [data-store^="product-description"] .user-content p.acdc-campo--sem-valor{
