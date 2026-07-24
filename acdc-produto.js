@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V6 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V7 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -1568,10 +1568,10 @@ input[name="quantity"]{
     .btt-container {
       position: fixed;
       bottom: 96px;
-      right: 25px;
+      right: 22px;
       z-index: 9999;
-      width: 50px;
-      height: 50px;
+      width: 58px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: center;
