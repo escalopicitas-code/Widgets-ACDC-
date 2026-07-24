@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V7 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V8 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -336,14 +336,34 @@ input[name="quantity"]{
   color:#B3261E !important; font-size:11px !important;
   letter-spacing:.04em !important; margin-top:8px !important; font-weight:500 !important;
 }
+.product-shipping-calculator .js-accordion-private-toggle{
+  display:flex !important; align-items:center !important;
+  min-height:54px !important; margin:0 !important; padding:0 !important;
+  color:var(--acdc-tinta) !important; text-decoration:none !important;
+}
+.product-shipping-calculator .js-accordion-private-toggle > .col{
+  padding-left:0 !important;
+}
+.product-shipping-calculator .js-accordion-private-toggle > .col-auto{
+  padding-right:0 !important;
+}
+.product-shipping-calculator .js-accordion-private-toggle .col > div{
+  display:flex !important; align-items:center !important; gap:10px !important;
+  font-size:11px !important; font-weight:600 !important;
+  letter-spacing:.16em !important; line-height:1.2 !important;
+  text-transform:uppercase !important;
+}
+.product-shipping-calculator .js-accordion-private-toggle svg{
+  color:var(--acdc-tinta) !important;
+}
 
 /* ══ 8. AVISO DE DISPONIBILIDADE ════════════════════════════════════════ */
 #${CFG.idAviso}{
   display:flex; align-items:center; gap:12px;
   width:100%; box-sizing:border-box;
-  margin:14px 0 0 0; padding:11px 14px;
+  min-height:54px; margin:16px 0 0 0; padding:0 0 0 14px;
   border:1px solid var(--acdc-linha); border-left:2px solid var(--acdc-ouro);
-  background:var(--acdc-fundo-2); color:var(--acdc-tinta);
+  background:#fff; color:var(--acdc-tinta);
   font-family:var(--acdc-fonte); line-height:1.4;
 }
 #${CFG.idAviso} .acdc-aviso-icone{
@@ -356,13 +376,14 @@ input[name="quantity"]{
   letter-spacing:.01em;
 }
 #${CFG.idAviso} a{
-  flex:0 0 auto; white-space:nowrap; color:var(--acdc-tinta);
+  display:flex; align-self:stretch; align-items:center; justify-content:center;
+  flex:0 0 auto; min-width:112px; white-space:nowrap; color:#fff;
+  background:var(--acdc-preto);
   font-size:9.5px; font-weight:600; letter-spacing:.18em;
-  text-decoration:none; text-transform:uppercase;
-  border-bottom:1px solid var(--acdc-tinta); padding-bottom:2px;
-  transition:color .2s ease,border-color .2s ease;
+  text-decoration:none; text-transform:uppercase; border:none; padding:0 20px;
+  transition:color .2s ease,background .2s ease;
 }
-#${CFG.idAviso} a:hover{ color:var(--acdc-ouro); border-color:var(--acdc-ouro); }
+#${CFG.idAviso} a:hover{ color:var(--acdc-preto); background:var(--acdc-ouro); }
 
 /* ══ 9. DESCRIÇÃO — preserva o conteúdo cadastrado ═════════════════════ */
 [data-store^="product-description"] .user-content p.acdc-campo{
@@ -439,9 +460,9 @@ input[name="quantity"]{
   [data-store^="product-description"] .user-content p.acdc-campo-continuacao{
     padding:0 0 14px 0 !important;
   }
-  #${CFG.idAviso}{ flex-wrap:wrap; padding:10px 12px; gap:9px; }
+  #${CFG.idAviso}{ flex-wrap:wrap; padding:10px 10px 10px 12px; gap:9px; }
   #${CFG.idAviso} .acdc-aviso-texto{ font-size:11px; flex:1 1 100%; order:2; }
-  #${CFG.idAviso} a{ order:3; margin-left:auto; }
+  #${CFG.idAviso} a{ order:3; min-height:40px; margin-left:auto; padding:0 16px; }
 }
 `;
 
@@ -1137,22 +1158,26 @@ input[name="quantity"]{
 
   const style = d.createElement('style');
   style.textContent = `
-    #wpc-wrap{display:none!important;max-width:390px!important;margin:20px 0!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease}
+    #wpc-wrap{display:none!important;width:100%!important;max-width:none!important;margin:16px 0!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease}
     #wpc-wrap.wpc-in{opacity:1!important;transform:translateY(0)!important}
-    .wpc-trigger{width:100%!important;display:flex!important;align-items:center!important;gap:13px!important;background:#fff!important;border:1.5px solid #1a1a1a!important;border-radius:14px!important;padding:13px 16px!important;cursor:pointer!important;text-align:left!important;transition:background .2s,box-shadow .2s,transform .15s!important}
-    .wpc-trigger:hover{background:#f7f7f7!important;box-shadow:0 6px 20px rgba(0,0,0,.1)!important;transform:translateY(-1px)!important}
-    .wpc-trigger:active{transform:translateY(0)!important}
-    .wpc-badge{flex-shrink:0!important;width:40px!important;height:40px!important;border-radius:11px!important;background:#f0f0f0!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#1a1a1a!important}
+    .wpc-trigger{width:100%!important;min-height:54px!important;display:flex!important;align-items:stretch!important;gap:0!important;background:#fff!important;border:1px solid #1a1a1a!important;border-radius:0!important;padding:0!important;cursor:pointer!important;text-align:left!important;overflow:hidden!important;box-shadow:none!important;transition:border-color .2s ease!important}
+    .wpc-trigger:hover{background:#fff!important;border-color:#c9a84c!important;box-shadow:none!important;transform:none!important}
+    .wpc-trigger:active{transform:none!important}
+    .wpc-trigger .wpc-badge{flex-shrink:0!important;width:54px!important;height:54px!important;border-radius:0!important;background:#fff!important;border-right:1px solid #e2e2e2!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#1a1a1a!important}
+    .wpc-trigger .wpc-badge svg{width:19px!important;height:19px!important}
+    .wpc-trigger .wpc-badge--painel{background:#fff!important;color:#1a1a1a!important}
+    .wpc-badge{flex-shrink:0!important;width:40px!important;height:40px!important;border-radius:0!important;background:#f0f0f0!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#1a1a1a!important}
     .wpc-badge svg{width:21px!important;height:21px!important}
     .wpc-badge--painel{background:#1a1a1a!important;color:#fff!important}
-    .wpc-trigger-text{flex:1!important;min-width:0!important}
-    .wpc-trigger-text strong{display:block!important;font-size:13.5px!important;font-weight:800!important;color:#1a1a1a!important;letter-spacing:-.01em!important}
-    .wpc-trigger-text small{display:block!important;font-size:11px!important;color:#888!important;margin-top:2px!important;line-height:1.3!important}
-    .wpc-mode-chip{display:inline-flex!important;align-items:center!important;padding:2px 8px!important;border-radius:99px!important;font-size:10px!important;font-weight:700!important;letter-spacing:.04em!important;text-transform:uppercase!important;margin-top:5px!important}
+    .wpc-trigger-text{flex:1!important;min-width:0!important;display:flex!important;align-items:center!important;padding:0 16px!important}
+    .wpc-trigger-text strong{display:block!important;font-size:11px!important;font-weight:600!important;color:#1a1a1a!important;letter-spacing:.16em!important;text-transform:uppercase!important}
+    .wpc-trigger-text small,.wpc-trigger .wpc-mode-chip{display:none!important}
+    .wpc-mode-chip{display:inline-flex!important;align-items:center!important;padding:2px 8px!important;border-radius:0!important;font-size:10px!important;font-weight:700!important;letter-spacing:.04em!important;text-transform:uppercase!important;margin-top:5px!important}
     .wpc-mode-chip--rolo{background:#f0f0f0!important;color:#555!important}
     .wpc-mode-chip--painel{background:#1a1a1a!important;color:#fff!important}
-    .wpc-arrow{flex-shrink:0!important;width:16px!important;height:16px!important;color:#1a1a1a!important;transition:transform .25s ease!important}
-    .wpc-trigger:hover .wpc-arrow{transform:translateX(3px)!important}
+    .wpc-trigger-action{flex:0 0 112px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#1a1a1a!important;color:#fff!important;font-size:9.5px!important;font-weight:600!important;letter-spacing:.18em!important;text-transform:uppercase!important;transition:background .2s ease,color .2s ease!important}
+    .wpc-trigger:hover .wpc-trigger-action{background:#c9a84c!important;color:#1a1a1a!important}
+    @media(max-width:480px){.wpc-trigger-action{flex-basis:88px!important}.wpc-trigger-text{padding:0 12px!important}.wpc-trigger-text strong{font-size:10px!important;letter-spacing:.1em!important}}
     #wpc-overlay{position:fixed!important;inset:0!important;background:rgba(0,0,0,.5)!important;z-index:99999!important;display:none;align-items:center!important;justify-content:center!important;padding:20px!important;opacity:0;transition:opacity .3s ease!important}
     #wpc-overlay.wpc-open{display:flex!important;opacity:1!important}
     .wpc-panel{position:relative!important;background:#fff!important;border-radius:18px!important;max-width:390px!important;width:100%!important;max-height:92vh!important;overflow-y:auto!important;box-shadow:0 28px 80px rgba(0,0,0,.28)!important;transform:scale(.93) translateY(12px)!important;transition:transform .38s cubic-bezier(.22,.61,.36,1)!important}
@@ -1223,7 +1248,7 @@ input[name="quantity"]{
         <small>${isPainel ? 'Descubra quantos m² você precisa' : 'Descubra quantos rolos você precisa'}</small>
         <span class="wpc-mode-chip wpc-mode-chip--${isPainel ? 'painel' : 'rolo'}">${isPainel ? 'Modo painel' : 'Modo rolo'}</span>
       </span>
-      <span class="wpc-arrow">${ICON_CHEVRON}</span>
+      <span class="wpc-trigger-action">Abrir</span>
     </button>
   `;
 
