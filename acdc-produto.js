@@ -1,4 +1,4 @@
-/* ACDC CASA — VERSÃO COMPLETA V4 — 24/07/2026
+/* ACDC CASA — VERSÃO COMPLETA V5 — 24/07/2026
    Inclui produto, medidas em linha, transição, calculadora,
    voltar ao topo e produtos sem preço/sob consulta.
 */
@@ -583,6 +583,60 @@ input[name="quantity"]{
     }
   }
 
+  function temTextoUtil(el) {
+    return !!String(el && el.textContent || '')
+      .replace(/\u00a0/g, ' ')
+      .trim();
+  }
+
+  function proximoBlocoDaDescricao(atual, box) {
+    var cursor = atual;
+
+    while (cursor && cursor !== box) {
+      if (cursor.nextElementSibling) return cursor.nextElementSibling;
+      cursor = cursor.parentElement;
+    }
+
+    return null;
+  }
+
+  function juntarValoresDeMedidasSeparados(box) {
+    var campos = box.querySelectorAll('p.acdc-campo--medidas');
+
+    for (var i = 0; i < campos.length; i++) {
+      var campo = campos[i];
+      var conteudo = campo.querySelector(':scope > .acdc-campo-conteudo');
+      if (!conteudo || temTextoUtil(conteudo)) continue;
+
+      var candidato = proximoBlocoDaDescricao(campo, box);
+
+      // Ignora os DIVs vazios que o editor cria quando alguém aperta Enter.
+      while (candidato && !temTextoUtil(candidato)) {
+        var vazio = candidato;
+        candidato = proximoBlocoDaDescricao(vazio, box);
+        if (vazio.parentNode) vazio.parentNode.removeChild(vazio);
+      }
+
+      if (!candidato) continue;
+
+      // Nunca captura o campo seguinte da ficha.
+      var proximoRotulo = candidato.matches('p.acdc-campo')
+        ? candidato.querySelector('.acdc-campo-label')
+        : candidato.querySelector('strong, b');
+      if (proximoRotulo && tipoRotuloDaFicha(proximoRotulo.textContent) !== 'campo') {
+        continue;
+      }
+
+      while (candidato.firstChild) {
+        conteudo.appendChild(candidato.firstChild);
+      }
+      if (candidato.parentNode) candidato.parentNode.removeChild(candidato);
+
+      limparQuebrasNasBordas(conteudo);
+      campo.classList.remove('acdc-campo--sem-valor');
+    }
+  }
+
   function organizarDescricaoPlana(box) {
     var nos = Array.prototype.slice.call(box.childNodes);
     var temRotuloDireto = false;
@@ -714,6 +768,10 @@ input[name="quantity"]{
 
       p.setAttribute('data-acdc-campo', 'ok');
     }
+
+    // Alguns produtos antigos foram salvos com "Medida" em um DIV e o valor
+    // no DIV seguinte. Une os dois somente para layout, sem reescrever o texto.
+    juntarValoresDeMedidasSeparados(box);
   }
   /* ------------------------------------------ 3. AVISO DE DISPONIBILIDADE */
   function ehProdutoComAviso() {
