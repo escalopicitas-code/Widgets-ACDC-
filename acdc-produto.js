@@ -455,20 +455,96 @@ input[name="quantity"]{
   }
 
   /* -------------------------------------- 2. ORGANIZAR CAMPOS DA DESCRIÇÃO */
-  function ehRotuloDaFicha(texto) {
+  function tipoRotuloDaFicha(texto) {
     var chave = normalizar(texto)
       .replace(/[:.\s]+$/g, '')
       .replace(/\s+/g, ' ');
 
-    return [
-      'material',
-      'medida',
-      'medidas',
-      'cor',
-      'obs',
-      'observacao',
-      'observacoes'
-    ].indexOf(chave) !== -1;
+    if (chave === 'material') return 'material';
+    if (chave === 'medida' || chave === 'medidas') return 'medidas';
+    if (chave === 'cor') return 'cor';
+    if (chave === 'obs' || chave === 'observacao' || chave === 'observacoes') return 'obs';
+    return '';
+  }
+
+  function limparQuebrasNasBordas(el) {
+    while (el.firstChild) {
+      var primeiro = el.firstChild;
+      var vazio = primeiro.nodeType === 3 && !primeiro.nodeValue.trim();
+      if (primeiro.nodeName === 'BR' || vazio) {
+        el.removeChild(primeiro);
+      } else {
+        break;
+      }
+    }
+
+    while (el.lastChild) {
+      var ultimo = el.lastChild;
+      var vazioFinal = ultimo.nodeType === 3 && !ultimo.nodeValue.trim();
+      if (ultimo.nodeName === 'BR' || vazioFinal) {
+        el.removeChild(ultimo);
+      } else {
+        break;
+      }
+    }
+  }
+
+  function organizarDescricaoPlana(box) {
+    var nos = Array.prototype.slice.call(box.childNodes);
+    var temRotuloDireto = false;
+
+    for (var i = 0; i < nos.length; i++) {
+      var no = nos[i];
+      if (no.nodeType === 1
+        && (no.tagName === 'STRONG' || no.tagName === 'B')
+        && tipoRotuloDaFicha(no.textContent)) {
+        temRotuloDireto = true;
+        break;
+      }
+    }
+    if (!temRotuloDireto) return;
+
+    var fragmento = document.createDocumentFragment();
+    var campo = null;
+
+    function concluirCampo() {
+      if (!campo) return;
+      limparQuebrasNasBordas(campo.conteudo);
+      campo.p.appendChild(campo.conteudo);
+      campo.p.setAttribute('data-acdc-campo', 'ok');
+      fragmento.appendChild(campo.p);
+      campo = null;
+    }
+
+    for (var n = 0; n < nos.length; n++) {
+      var atual = nos[n];
+      var tipo = atual.nodeType === 1
+        && (atual.tagName === 'STRONG' || atual.tagName === 'B')
+        ? tipoRotuloDaFicha(atual.textContent)
+        : '';
+
+      if (tipo) {
+        concluirCampo();
+        var p = document.createElement('p');
+        p.className = 'acdc-campo acdc-campo--' + tipo;
+        atual.classList.add('acdc-campo-label');
+        p.appendChild(atual);
+
+        campo = {
+          p: p,
+          conteudo: document.createElement('span')
+        };
+        campo.conteudo.className = 'acdc-campo-conteudo';
+      } else if (campo) {
+        campo.conteudo.appendChild(atual);
+      } else {
+        fragmento.appendChild(atual);
+      }
+    }
+    concluirCampo();
+
+    while (box.firstChild) box.removeChild(box.firstChild);
+    box.appendChild(fragmento);
   }
 
   function organizarDescricao() {
@@ -476,13 +552,17 @@ input[name="quantity"]{
       || document.querySelector('.user-content');
     if (!box) return;
 
+    organizarDescricaoPlana(box);
+
     var ps = box.querySelectorAll('p');
     for (var i = 0; i < ps.length; i++) {
       var p = ps[i];
+      if (!box.contains(p)) continue;
       if (p.getAttribute('data-acdc-campo') === 'ok') continue;
 
       var forte = p.querySelector('strong, b');
-      if (!forte || !ehRotuloDaFicha(forte.textContent)) continue;
+      var tipo = forte ? tipoRotuloDaFicha(forte.textContent) : '';
+      if (!forte || !tipo) continue;
 
       // Quando os dois-pontos ficaram fora do negrito no editor, eles ainda
       // pertencem ao rótulo. Move somente essa pontuação, sem alterar o texto.
@@ -495,7 +575,7 @@ input[name="quantity"]{
         }
       }
 
-      p.classList.add('acdc-campo');
+      p.classList.add('acdc-campo', 'acdc-campo--' + tipo);
       forte.classList.add('acdc-campo-label');
 
       // Agrupa os nós do valor apenas para alinhamento. O conteúdo e a ordem
@@ -508,6 +588,20 @@ input[name="quantity"]{
           conteudo.appendChild(forte.nextSibling);
         }
         p.appendChild(conteudo);
+
+        // A Nuvemshop às vezes salva "Medidas" e o valor em parágrafos
+        // separados. Junta os dois para manter todas as fichas no mesmo padrão.
+        if (tipo === 'medidas' && !conteudo.textContent.trim()) {
+          var linhaMedidas = p.nextElementSibling;
+          if (linhaMedidas && linhaMedidas.tagName === 'P'
+            && !linhaMedidas.querySelector('strong, b')) {
+            while (linhaMedidas.firstChild) {
+              conteudo.appendChild(linhaMedidas.firstChild);
+            }
+            linhaMedidas.parentNode.removeChild(linhaMedidas);
+            limparQuebrasNasBordas(conteudo);
+          }
+        }
 
         if (!conteudo.textContent.trim()) {
           p.classList.add('acdc-campo--sem-valor');
